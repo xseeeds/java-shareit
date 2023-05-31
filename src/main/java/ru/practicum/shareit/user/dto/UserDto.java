@@ -2,19 +2,24 @@ package ru.practicum.shareit.user.dto;
 
 import lombok.Builder;
 import lombok.Value;
+import ru.practicum.shareit.validation.Marker;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Pattern;
+import javax.validation.constraints.*;
 
 @Value
 @Builder
 public class UserDto {
 
+    @Positive(groups = Marker.OnUpdate.class)
     Long id;
 
-    @Pattern(regexp = "^\\S+$", message = "не должен быть пустым и содержать пробелы")
+    @NotNull(groups = Marker.OnCreate.class)
+    @Pattern(groups = {Marker.OnCreate.class, Marker.OnUpdate.class},
+            regexp = "^\\S+$",
+            message = "не должен быть пустым и содержать пробелы")
     String name;
 
-    @Email
+    @NotEmpty(groups = Marker.OnCreate.class)
+    @Email(groups = {Marker.OnCreate.class, Marker.OnUpdate.class})
     String email;
 }

@@ -3,7 +3,6 @@ package ru.practicum.shareit.user.repository;
 import ru.practicum.shareit.expception.exp.ConflictException;
 import ru.practicum.shareit.expception.exp.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.dto.UserDtoCreate;
 
 import java.util.List;
 
@@ -13,7 +12,7 @@ public interface UserRepository {
 
     UserDto getUserById(long userId);
 
-    UserDto createUser(UserDtoCreate userDtoCreate) throws ConflictException;
+    UserDto createUser(UserDto userDto) throws ConflictException;
 
     UserDto updateUser(long userId, UserDto userDto) throws NotFoundException, ConflictException;
 

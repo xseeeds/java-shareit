@@ -2,7 +2,7 @@ package ru.practicum.shareit.user.service;
 
 import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.dto.UserDtoCreate;
+import ru.practicum.shareit.validation.Marker;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -15,12 +15,12 @@ public interface UserService {
 
     UserDto getUserById(@Positive long userId);
 
-    @Validated
-    UserDto createUser(@Valid UserDtoCreate userDtoCreate);
+    @Validated(Marker.OnCreate.class)
+    UserDto createUser(@Valid UserDto userDto);
 
-    @Validated
+    @Validated(Marker.OnUpdate.class)
     UserDto updateUser(@Positive long userId,
-                    @Valid UserDto userDto);
+                       @Valid UserDto userDto);
 
     void deleteUser(@Positive long userId);
 }

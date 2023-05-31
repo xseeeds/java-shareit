@@ -1,17 +1,18 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.dto.UserDtoCreate;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.validation.Marker;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -26,18 +27,20 @@ public class UserServiceImpl implements UserService {
         return userRepository.getUserById(userId);
     }
 
+    @Validated(Marker.OnCreate.class)
     @Override
-    public UserDto createUser(UserDtoCreate userDtoCreate) {
-        return userRepository.createUser(userDtoCreate);
+    public UserDto createUser(@Valid UserDto userDto) {
+        return userRepository.createUser(userDto);
     }
 
+    @Validated(Marker.OnUpdate.class)
     @Override
-    public UserDto updateUser(long userId, UserDto userDto) {
+    public UserDto updateUser(@Positive long userId, @Valid UserDto userDto) {
         return userRepository.updateUser(userId, userDto);
     }
 
     @Override
-    public void deleteUser(long userId) {
+    public void deleteUser(@Positive long userId) {
         userRepository.deleteUser(userId);
     }
 }

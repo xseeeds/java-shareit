@@ -2,13 +2,13 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.expception.exp.NotFoundException;
-import ru.practicum.shareit.item.dto.ItemDtoCreate;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.validation.Marker;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -16,7 +16,7 @@ import javax.validation.constraints.Positive;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
     final ItemRepository itemRepository;
@@ -32,12 +32,13 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.getItemIsNotRentedByName(text);
     }
 
+    @Validated(Marker.OnCreate.class)
     @Override
-    public ItemDto createItem(@Positive long userId, @Valid ItemDtoCreate itemDto) {
-        userRepository.checkExistUserById(userId);
+    public ItemDto createItem(@Positive long userId, @Valid ItemDto itemDto) {
         return itemRepository.createItem(userId, itemDto);
     }
 
+    @Validated(Marker.OnUpdate.class)
     @Override
     public ItemDto updateItem(@Positive long userId, @Positive long itemId, @Valid ItemDto itemDto) throws NotFoundException {
         return itemRepository.updateItem(userId, itemId, itemDto);

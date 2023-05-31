@@ -58,7 +58,7 @@ public class ErrorHandler {
             final SQLIntegrityConstraintViolationException e
     ) {
         log.error(e.getMessage(), e);
-        int endIndex = nthIndexOf(e.getMessage(), ")", 2);
+        final int endIndex = nthIndexOf(e.getMessage(), ")", 2);
         return new ErrorResponse(HttpStatus.CONFLICT.toString(),
                 "errorSQLIntegrityConstraintViolationException", e.getMessage().substring(0, endIndex + 1));
     }
@@ -69,7 +69,7 @@ public class ErrorHandler {
             final SQLSyntaxErrorException e
     ) {
         log.error(e.getMessage(), e);
-        int endIndex = nthIndexOf(e.getMessage(), "\n", 1);
+        final int endIndex = nthIndexOf(e.getMessage(), "\n", 1);
         return new ErrorResponse(HttpStatus.CONFLICT.toString(),
                 "errorSQLSyntaxErrorException", e.getMessage().substring(0, endIndex));
     }
@@ -111,17 +111,8 @@ public class ErrorHandler {
         return new ValidationErrorResponse(errorRequestBody);
     }
 
-/*
-    @ExceptionHandler()
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse errorInternalServerErrorException(final Throwable e) {
-        return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.toString(),
-                "errorInternalServerErrorException", "Произошла непредвиденная ошибка.");
-    }
-*/
 
-
-    private int nthIndexOf(String str, String subStr, int count) {
+     private int nthIndexOf(String str, String subStr, int count) {
         int index = -1;
         while (count > 0) {
             index = str.indexOf(subStr, index + 1);
@@ -132,4 +123,5 @@ public class ErrorHandler {
         }
         return index;
     }
+
 }

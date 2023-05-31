@@ -2,14 +2,11 @@ package ru.practicum.shareit.user.mapper;
 
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.dto.UserDtoCreate;
 import ru.practicum.shareit.user.model.User;
 
 
 @Component
 public class UserMapperImpl implements UserMapper {
-
-    private long generatorId = 0;
 
     @Override
     public UserDto toUserDto(User user) {
@@ -22,16 +19,12 @@ public class UserMapperImpl implements UserMapper {
     }
 
     @Override
-    public User toUserSetNextId(UserDtoCreate userDtoCreate) {
+    public User toUser(UserDto userDto) {
         return User
                 .builder()
-                .id(getNextGeneratorId())
-                .name(userDtoCreate.getName())
-                .email(userDtoCreate.getEmail())
+                .name(userDto.getName())
+                .email(userDto.getEmail())
                 .build();
     }
 
-    private long getNextGeneratorId() {
-        return ++generatorId;
-    }
 }

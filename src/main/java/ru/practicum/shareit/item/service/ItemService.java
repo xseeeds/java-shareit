@@ -1,8 +1,8 @@
 package ru.practicum.shareit.item.service;
 
 import org.springframework.validation.annotation.Validated;
-import ru.practicum.shareit.item.dto.ItemDtoCreate;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.validation.Marker;
 
 
 import javax.validation.Valid;
@@ -17,10 +17,10 @@ public interface ItemService {
 
     List<ItemDto> getItemIsNotRentedByNameOrDescription(@NotNull String text, @Positive long userId);
 
-    @Validated
-    ItemDto createItem(@Positive long userId, @Valid ItemDtoCreate itemDto);
+    @Validated(Marker.OnCreate.class)
+    ItemDto createItem(@Positive long userId, @Valid ItemDto itemDto);
 
-    @Validated
+    @Validated(Marker.OnUpdate.class)
     ItemDto updateItem(@Positive long userId, @Positive long itemId, @Valid ItemDto itemDto);
 
     List<ItemDto> getListItemsDtoByUser(@Positive long userId);
