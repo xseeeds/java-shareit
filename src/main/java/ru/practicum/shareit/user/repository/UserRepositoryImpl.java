@@ -6,7 +6,7 @@ import ru.practicum.shareit.expception.exp.ConflictException;
 import ru.practicum.shareit.expception.exp.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.model.UserEntity;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class UserRepositoryImpl implements UserRepository {
 
     private final UserMapper userMapper;
-    private final Map<Long, User> users = new HashMap<>();
+    private final Map<Long, UserEntity> users = new HashMap<>();
     private long generatorId = 0;
 
     @Override
@@ -44,15 +44,15 @@ public class UserRepositoryImpl implements UserRepository {
 
         checkEmailByExistUserEmails(userDto.getEmail(), null);
 
-        final User createdUser = userMapper
+        final UserEntity createdUserEntity = userMapper
                 .toUser(userDto)
                 .toBuilder()
                 .id(getNextGeneratorId())
                 .build();
 
-        users.put(createdUser.getId(), createdUser);
+        users.put(createdUserEntity.getId(), createdUserEntity);
 
-        return userMapper.toUserDto(createdUser);
+        return userMapper.toUserDto(createdUserEntity);
     }
 
     @Override
@@ -62,21 +62,21 @@ public class UserRepositoryImpl implements UserRepository {
 
         checkEmailByExistUserEmails(userDto.getEmail(), userId);
 
-        User existUser = users.get(userId);
+        UserEntity existUserEntity = users.get(userId);
 
         if (userDto.getEmail() != null) {
-            existUser = existUser.toBuilder().email(userDto.getEmail()).build();
+            existUserEntity = existUserEntity.toBuilder().email(userDto.getEmail()).build();
 
         }
         if (userDto.getName() != null) {
-            existUser = existUser.toBuilder().name(userDto.getName()).build();
+            existUserEntity = existUserEntity.toBuilder().name(userDto.getName()).build();
         }
 
         users
                 .put(userId,
-                        existUser);
+                        existUserEntity);
 
-        return userMapper.toUserDto(existUser);
+        return userMapper.toUserDto(existUserEntity);
     }
 
     @Override

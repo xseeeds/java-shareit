@@ -34,8 +34,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Validated(Marker.OnCreate.class)
     @Override
-    public ItemDto createItem(@Positive long userId, @Valid ItemDto itemDto) {
-        return itemRepository.createItem(userId, itemDto);
+    public ItemDto createItem(@Positive long ownerId, @Valid ItemDto itemDto) {
+        return itemRepository.createItem(ownerId, itemDto);
     }
 
     @Validated(Marker.OnUpdate.class)

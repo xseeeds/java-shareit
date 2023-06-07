@@ -29,7 +29,7 @@ public class ErrorHandler {
             final BadRequestException e
     ) {
         log.error(e.getMessage(), e);
-        return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), "errorNotFoundException", e.getMessage());
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), "errorBadRequestException", e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -112,16 +112,11 @@ public class ErrorHandler {
     }
 
 
-     private int nthIndexOf(String str, String subStr, int count) {
-        int index = -1;
-        while (count > 0) {
-            index = str.indexOf(subStr, index + 1);
-            if (index == -1) {
-                return -1;
-            }
-            count--;
-        }
-        return index;
+    private int nthIndexOf(String str, String substr, int nth) {
+        int pos = str.indexOf(substr);
+        while (--nth > 0 && pos != -1)
+            pos = str.indexOf(substr, pos + 1);
+        return pos;
     }
 
 }

@@ -1,12 +1,12 @@
 package ru.practicum.shareit.item.mapper;
 
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.model.ItemEntity;
 
 public interface ItemMapper {
 
-    ItemDto toItemDto(Item item);
+    ItemDto toItemDto(ItemEntity itemEntity);
 
-    Item toItem(ItemDto itemDto);
+    ItemEntity toItem(ItemDto itemDto, long ownerId);
 
 }
