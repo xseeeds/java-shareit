@@ -3,8 +3,8 @@ package ru.practicum.shareit.booking.model;
 import lombok.Builder;
 import lombok.Value;
 import ru.practicum.shareit.booking.status.Status;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.item.model.ItemEntity;
+import ru.practicum.shareit.user.model.UserEntity;
 
 import java.time.LocalDateTime;
 
@@ -18,7 +18,7 @@ public class Booking {
     long id;
     LocalDateTime start;
     LocalDateTime end;
-    Item item;
-    User booker;
+    ItemEntity itemEntity;
+    UserEntity booker;
     Status status;
 }

@@ -18,7 +18,7 @@ public interface ItemService {
     List<ItemDto> getItemIsNotRentedByNameOrDescription(@NotNull String text, @Positive long userId);
 
     @Validated(Marker.OnCreate.class)
-    ItemDto createItem(@Positive long userId, @Valid ItemDto itemDto);
+    ItemDto createItem(@Positive long ownerId, @Valid ItemDto itemDto);
 
     @Validated(Marker.OnUpdate.class)
     ItemDto updateItem(@Positive long userId, @Positive long itemId, @Valid ItemDto itemDto);

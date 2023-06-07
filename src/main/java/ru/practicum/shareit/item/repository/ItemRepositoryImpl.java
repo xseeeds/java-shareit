@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.expception.exp.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.model.ItemEntity;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.*;
@@ -20,7 +20,7 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     private final ItemMapper itemMapper;
     private final UserRepository userRepository;
-    private final Map<Long, Item> items = new HashMap<>();
+    private final Map<Long, ItemEntity> items = new HashMap<>();
     private final Map<Long, List<Long>> itemIdsByOwnerId = new HashMap<>();
     private long generatorId = 0;
 
@@ -33,53 +33,51 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public ItemDto createItem(long userId, ItemDto itemDto) {
+    public ItemDto createItem(long ownerId, ItemDto itemDto) {
 
-        userRepository.checkExistUserById(userId);
+        userRepository.checkExistUserById(ownerId);
 
-        final Item createdItem = itemMapper
-                .toItem(itemDto)
+        final ItemEntity createdItemEntity = itemMapper.toItem(itemDto, ownerId)
                 .toBuilder()
                 .id(getNextGeneratorId())
-                .owner(userId)
                 .build();
 
-        items.put(createdItem.getId(), createdItem);
+        items.put(createdItemEntity.getId(), createdItemEntity);
 
         itemIdsByOwnerId.computeIfAbsent(
-                        userId,
+                        ownerId,
                         v -> new ArrayList<>())
-                .add(createdItem.getId());
+                .add(createdItemEntity.getId());
 
-        return itemMapper.toItemDto(createdItem);
+        return itemMapper.toItemDto(createdItemEntity);
     }
 
     @Override
     public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) throws NotFoundException {
 
-        checkExistItemByUserId(userId, itemId);
+        this.checkExistItemByUserId(userId, itemId);
 
-        Item updatedItem = items.get(itemId);
+        ItemEntity updatedItemEntity = items.get(itemId);
 
         if (itemDto.getName() != null) {
-            updatedItem = updatedItem.toBuilder().name(itemDto.getName()).build();
+            updatedItemEntity = updatedItemEntity.toBuilder().name(itemDto.getName()).build();
         }
         if (itemDto.getDescription() != null) {
-            updatedItem = updatedItem.toBuilder().description(itemDto.getDescription()).build();
+            updatedItemEntity = updatedItemEntity.toBuilder().description(itemDto.getDescription()).build();
         }
         if (itemDto.getAvailable() != null) {
-            updatedItem = updatedItem.toBuilder().available(itemDto.getAvailable()).build();
+            updatedItemEntity = updatedItemEntity.toBuilder().available(itemDto.getAvailable()).build();
         }
 
-        items.put(updatedItem.getId(), updatedItem);
+        items.put(updatedItemEntity.getId(), updatedItemEntity);
 
-        return itemMapper.toItemDto(updatedItem);
+        return itemMapper.toItemDto(updatedItemEntity);
     }
 
     @Override
     public void deleteItem(long userId, long itemId) {
 
-        checkExistItemByUserId(userId, itemId);
+        this.checkExistItemByUserId(userId, itemId);
 
         items.remove(itemId);
 
@@ -98,7 +96,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     public void checkExistItemById(long itemId) throws NotFoundException {
 
         if (!items.containsKey(itemId)) {
-            throw new NotFoundException("Вещь по id => " + itemId + " не найдена");
+            throw new NotFoundException("Вещь по id => " + itemId + " не существует");
         }
     }
 
@@ -112,9 +110,9 @@ public class ItemRepositoryImpl implements ItemRepository {
         return items
                 .values()
                 .stream()
-                .filter(item -> item.getAvailable()
-                        && (StringUtils.containsIgnoreCase(item.getName(), text) ||
-                        StringUtils.containsIgnoreCase(item.getDescription(), text)))
+                .filter(itemEntity -> itemEntity.getAvailable()
+                        && (StringUtils.containsIgnoreCase(itemEntity.getName(), text) ||
+                        StringUtils.containsIgnoreCase(itemEntity.getDescription(), text)))
                 .map(itemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -128,6 +126,11 @@ public class ItemRepositoryImpl implements ItemRepository {
                 .map(items::get)
                 .map(itemMapper::toItemDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ItemEntity> search(String text) {
+        return null;
     }
 
     private long getNextGeneratorId() {

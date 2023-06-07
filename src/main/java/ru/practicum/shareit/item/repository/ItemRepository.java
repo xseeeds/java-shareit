@@ -1,8 +1,10 @@
 package ru.practicum.shareit.item.repository;
 
+import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.expception.exp.ConflictException;
 import ru.practicum.shareit.expception.exp.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.ItemEntity;
 
 import java.util.List;
 
@@ -10,7 +12,7 @@ public interface ItemRepository {
 
     ItemDto getItemDtoById(long itemId) throws NotFoundException;
 
-    ItemDto createItem(long userId, ItemDto itemDto);
+    ItemDto createItem(long ownerId, ItemDto itemDto);
 
     ItemDto updateItem(long userId, long itemId, ItemDto itemDto) throws NotFoundException;
 
@@ -23,4 +25,10 @@ public interface ItemRepository {
     List<ItemDto> getItemIsNotRentedByName(String text);
 
     List<ItemDto> getListItemsDtoByUser(long userId);
+
+    @Query("select i from ItemEntity as i " +
+            "where i.name ilike concat('%', ?1, '%') " +
+            "or i.description ilike concat('%', ?1, '%')")
+    List<ItemEntity> search(String text);
+
 }

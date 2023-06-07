@@ -7,7 +7,7 @@ import ru.practicum.shareit.validation.Marker;
 import javax.validation.constraints.*;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class UserDto {
 
     @Positive(groups = Marker.OnUpdate.class)
@@ -19,7 +19,7 @@ public class UserDto {
             message = "не должен быть пустым и содержать пробелы")
     String name;
 
-    @NotEmpty(groups = Marker.OnCreate.class)
+    @NotBlank(groups = Marker.OnCreate.class)
     @Email(groups = {Marker.OnCreate.class, Marker.OnUpdate.class})
     String email;
 }

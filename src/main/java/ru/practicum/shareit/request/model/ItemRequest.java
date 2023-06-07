@@ -2,7 +2,7 @@ package ru.practicum.shareit.request.model;
 
 import lombok.Builder;
 import lombok.Value;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.model.UserEntity;
 
 import java.time.LocalDateTime;
 
@@ -19,5 +19,5 @@ public class ItemRequest {
 
     LocalDateTime created;
 
-    User requestor;
+    UserEntity requestor;
 }
