@@ -28,8 +28,10 @@ public class ItemController {
 
     @GetMapping("/{itemId}")
     public ItemWithBookingAndCommentsResponseDto findItemDtoById(@RequestHeader(HttpHeadersShareIt.X_SHARER_USER_ID) long userId,
-                                                                 @PathVariable long itemId) {
-        return itemService.findItemWithBookingAndCommentsResponseDtoById(userId, itemId);
+                                                                 @PathVariable long itemId,
+                                                                 @RequestParam(defaultValue = "1") int from,
+                                                                 @RequestParam(defaultValue = "10") int size) {
+        return itemService.findItemWithBookingAndCommentsResponseDtoById(userId, itemId, from, size);
     }
 
     @PatchMapping("/{itemId}")

@@ -78,7 +78,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemWithBookingAndCommentsResponseDto findItemWithBookingAndCommentsResponseDtoById(@Positive long userId,
-                                                                                               @Positive long itemId) {
+                                                                                               @Positive long itemId,
+                                                                                               @PositiveOrZero int from,
+                                                                                               @Positive int size) {
         final ItemEntity itemEntity = findItemEntityById(itemId);
 
         final List<CommentResponseDto> commentResponseDtoList = commentRepository
@@ -102,7 +104,9 @@ public class ItemServiceImpl implements ItemService {
                             itemWithBookingAndCommentsResponseDto.setNextBooking(BookingMapper.toBookingShortResponseDto(bookingEntity));
                         }
                     });
+            log.info("Владелец по id => {}", userId);
         }
+        log.info("Пользователь по id => {} выполнил запрос на вещь с бронированием и комментариями по id => {} получена", userId, itemId);
         return itemWithBookingAndCommentsResponseDto;
     }
 

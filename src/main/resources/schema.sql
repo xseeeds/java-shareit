@@ -1,4 +1,4 @@
-
+/*
 drop table if exists bookings, comments, items, users cascade;
 
     create table bookings (

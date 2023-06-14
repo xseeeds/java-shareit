@@ -50,7 +50,7 @@ public interface ItemRepository extends JpaRepository<ItemEntity, Long>, Queryds
                                                     "(" +
                                                     "SELECT MAX(start_date) " +
                                                         "FROM bookings " +
-                                                        "WHERE status ilike 'APPROVED' AND start_date <= :now" +
+                                                        "WHERE status like 'APPROVED' AND start_date <= :now" +
                                                     ") " +
                                 "AND b3.item_id = items.id" +
                         ") AS last_booking_entity, " +
@@ -61,7 +61,7 @@ public interface ItemRepository extends JpaRepository<ItemEntity, Long>, Queryds
                                                     "(" +
                                                     "SELECT MIN(START_DATE) " +
                                                         "FROM bookings " +
-                                                        "WHERE status ilike 'APPROVED' AND start_date >= :now" +
+                                                        "WHERE status like 'APPROVED' AND start_date >= :now" +
                                                     ") " +
                                 "AND b4.item_id = items.id" +
                         ") AS next_booking_entity " +

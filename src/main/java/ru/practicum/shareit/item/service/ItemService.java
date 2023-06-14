@@ -34,7 +34,9 @@ public interface ItemService {
     ItemResponseDto findItemDtoById(@Positive long itemId) throws NotFoundException;
 
     ItemWithBookingAndCommentsResponseDto findItemWithBookingAndCommentsResponseDtoById(@Positive long userId,
-                                                                                        @Positive long itemId);
+                                                                                        @Positive long itemId,
+                                                                                        @PositiveOrZero int from,
+                                                                                        @Positive int size);
 
     @Transactional
     @Modifying
