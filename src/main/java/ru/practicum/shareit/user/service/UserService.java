@@ -1,26 +1,48 @@
 package ru.practicum.shareit.user.service;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.expception.exp.NotFoundException;
+import ru.practicum.shareit.user.repository.UserNameProjection;
+import ru.practicum.shareit.user.dto.UserResponseDto;
+import ru.practicum.shareit.user.model.UserEntity;
 import ru.practicum.shareit.validation.Marker;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
+@Service
 @Validated
+@Transactional(readOnly = true)
 public interface UserService {
 
-    List<UserDto> getAllUserDto();
-
-    UserDto getUserById(@Positive long userId);
-
+    @Transactional
     @Validated(Marker.OnCreate.class)
-    UserDto createUser(@Valid UserDto userDto);
+    @Modifying
+    UserResponseDto createUser(@Valid UserResponseDto userResponseDto);
 
+    UserResponseDto findUserById(@Positive long userId) throws NotFoundException;
+
+    @Transactional
     @Validated(Marker.OnUpdate.class)
-    UserDto updateUser(@Positive long userId,
-                       @Valid UserDto userDto);
+    @Modifying
+    UserResponseDto updateUser(@Positive long userId,
+                               @Valid UserResponseDto userResponseDto) throws NotFoundException;
 
-    void deleteUser(@Positive long userId);
+    @Transactional
+    @Modifying
+    void deleteUserById(@Positive long userId) throws NotFoundException;
+
+    List<UserResponseDto> findAllUserResponseDto(@PositiveOrZero int from,
+                                                 @Positive int size);
+
+    UserNameProjection findNameByUserId(long userId);
+
+    UserEntity findUserEntityById(@Positive long userId);
+
+    void checkUserIsExistById(@Positive long userId);
 }

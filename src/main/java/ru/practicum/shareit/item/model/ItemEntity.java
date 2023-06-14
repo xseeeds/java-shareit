@@ -8,7 +8,7 @@ import ru.practicum.shareit.user.model.UserEntity;
 
 import javax.persistence.*;
 
-@Value
+@Data
 @Builder(toBuilder = true)
 @Entity
 @Table(name = "items")
@@ -18,24 +18,24 @@ public class ItemEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @ManyToOne(targetEntity = UserEntity.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", referencedColumnName = "id", nullable = false, unique = true, insertable = false, updatable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonBackReference
     @ToString.Exclude
-    UserEntity owner;
+    private UserEntity owner;
 
     @Column(name = "owner_id")
-    Long ownerId;
+    private Long ownerId;
 
-    String name;
+    private String name;
 
-    String description;
+    private String description;
 
-    Boolean available;
+    private Boolean available;
 
-    Long requestId;
+    private Long requestId;
 
 }

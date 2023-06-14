@@ -10,7 +10,7 @@ import javax.validation.constraints.Positive;
 
 @Value
 @Builder(toBuilder = true)
-public class ItemDto {
+public class ItemResponseDto {
 
     @Positive(groups = Marker.OnUpdate.class)
     Long id;
