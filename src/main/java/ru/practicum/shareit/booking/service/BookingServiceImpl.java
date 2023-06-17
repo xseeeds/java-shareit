@@ -213,7 +213,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingShortResponseDto findNextBooking(@Positive long itemId,  LocalDateTime now) {
         final BookingShortDtoProjection bookingShortDtoProjection = bookingRepository
-                .findFirstByItemIdAndStartAfterAndStatusOrderByStart(itemId, now, Status.APPROVED);
+                .findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(itemId, now, Status.APPROVED);
         if (bookingShortDtoProjection == null) {
             log.info("Следующего бронирования для вещи по id => {} для СЕРВИСОВ не найдено", itemId);
             return null;

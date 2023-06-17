@@ -86,7 +86,7 @@ public class ItemServiceImpl implements ItemService {
                                                                                                @Positive long itemId,
                                                                                                @PositiveOrZero int from,
                                                                                                @Positive int size) {
-        final ItemEntity itemEntity = findItemEntityById(itemId);
+        final ItemEntity itemEntity = this.findItemEntityById(itemId);
 
         final List<CommentResponseDto> commentResponseDtoList = commentRepository
                 .findAllByItemIdOrderByCreatedDesc(itemId)

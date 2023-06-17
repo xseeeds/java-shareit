@@ -50,7 +50,7 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long>, Q
 
     BookingShortDtoProjection findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(long itemId, LocalDateTime now, Status status);
 
-    BookingShortDtoProjection findFirstByItemIdAndStartAfterAndStatusOrderByStart(long itemId, LocalDateTime now, Status status);
+    BookingShortDtoProjection findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(long itemId, LocalDateTime now, Status status);
 
     List<BookingEntity> findAllBookingByItemOwnerId(long ownerId);
 
