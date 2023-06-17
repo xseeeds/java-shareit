@@ -10,4 +10,6 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long>, Q
 
     List<CommentEntity> findAllByItemIdOrderByCreatedDesc(long itemId);
 
+    List<CommentEntity> findAllByItemIdIn(List<Long> itemIds);
+
 }

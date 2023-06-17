@@ -2,19 +2,26 @@ package ru.practicum.shareit.item.mapper;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.booking.dto.BookingShortResponseDto;
+import ru.practicum.shareit.booking.enums.Status;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
+import ru.practicum.shareit.booking.model.BookingEntity;
 import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingAndCommentsResponseDto;
-import ru.practicum.shareit.item.dto.ItemWithBookingResponseDto;
+import ru.practicum.shareit.item.model.CommentEntity;
 import ru.practicum.shareit.item.model.ItemEntity;
-import ru.practicum.shareit.item.repository.ItemWithBookingProjection;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+
+import static java.util.stream.Collectors.toList;
 
 @UtilityClass
 public class ItemMapper {
 
-    public ItemResponseDto toItemDto(ItemEntity itemEntity) {
+    public ItemResponseDto toItemResponseDto(ItemEntity itemEntity) {
         return ItemResponseDto
                 .builder()
                 .id(itemEntity.getId())
@@ -24,7 +31,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public ItemEntity toItem(ItemResponseDto itemResponseDto, long ownerId) {
+    public ItemEntity toItemEntity(ItemResponseDto itemResponseDto, long ownerId) {
         return ItemEntity
                 .builder()
                 .name(itemResponseDto.getName())
@@ -34,33 +41,19 @@ public class ItemMapper {
                 .build();
     }
 
-    public ItemWithBookingResponseDto toItemWithBookingResponseDto(ItemWithBookingProjection projection) {
-        BookingShortResponseDto lastBooking = null;
-        BookingShortResponseDto nextBooking = null;
-
-        if (projection.getLastBookingEntityId() != null) {
-            lastBooking = new BookingShortResponseDto(
-                    projection.getLastBookingEntityId(),
-                    projection.getLastBookingEntityBookerId(),
-                    projection.getLastBookingEntityStart(),
-                    projection.getLastBookingEntityEnd());
-        }
-        if (projection.getNextBookingEntityId() != null) {
-            nextBooking = new BookingShortResponseDto(
-                    projection.getNextBookingEntityId(),
-                    projection.getNextBookingEntityBookerId(),
-                    projection.getNextBookingEntityStart(),
-                    projection.getNextBookingEntityEnd());
-        }
-
-        return ItemWithBookingResponseDto
+    public ItemWithBookingAndCommentsResponseDto toItemWithBookingAndCommentsResponseDto(ItemEntity itemEntity,
+                                                                                         BookingShortResponseDto lastBooking,
+                                                                                         BookingShortResponseDto nextBooking,
+                                                                                         List<CommentResponseDto> commentEntityListByItemIdOrderByCreatedDesc) {
+        return ItemWithBookingAndCommentsResponseDto
                 .builder()
-                .id(projection.getId())
-                .name(projection.getName())
-                .description(projection.getDescription())
-                .available(projection.getAvailable())
+                .id(itemEntity.getId())
+                .name(itemEntity.getName())
+                .description(itemEntity.getDescription())
+                .available(itemEntity.getAvailable())
                 .lastBooking(lastBooking)
                 .nextBooking(nextBooking)
+                .comments(commentEntityListByItemIdOrderByCreatedDesc)
                 .build();
     }
 

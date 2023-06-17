@@ -9,7 +9,6 @@ import ru.practicum.shareit.expception.exp.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingAndCommentsResponseDto;
-import ru.practicum.shareit.item.dto.ItemWithBookingResponseDto;
 import ru.practicum.shareit.item.model.ItemEntity;
 import ru.practicum.shareit.validation.Marker;
 
@@ -54,7 +53,7 @@ public interface ItemService {
                                                         @PositiveOrZero int from,
                                                         @Positive int size);
 
-    List<ItemWithBookingResponseDto> findItemsWithBookingResponseDtoByOwnerId(@Positive long ownerId,
+    List<ItemWithBookingAndCommentsResponseDto> findItemWithBookingAndCommentsResponseDtoByOwnerId(@Positive long ownerId,
                                                                               @PositiveOrZero int from,
                                                                               @Positive int size);
 

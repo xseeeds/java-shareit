@@ -6,6 +6,7 @@ import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.dto.BookingShortResponseDto;
 import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.BookingEntity;
+import ru.practicum.shareit.booking.repository.BookingShortDtoProjection;
 import ru.practicum.shareit.item.dto.ItemShortResponseDto;
 import ru.practicum.shareit.item.model.ItemEntity;
 import ru.practicum.shareit.user.dto.UserIdShortResponseDto;
@@ -40,6 +41,16 @@ public class BookingMapper {
                 .end(bookingRequestDto.getEnd())
                 .bookerId(bookerId)
                 .status(Status.WAITING)
+                .build();
+    }
+
+    public BookingShortResponseDto toBookingShortResponseDto(BookingShortDtoProjection projection) {
+        return BookingShortResponseDto
+                .builder()
+                .id(projection.getId())
+                .bookerId(projection.getBookerId())
+                .start(projection.getStart())
+                .end(projection.getEnd())
                 .build();
     }
 

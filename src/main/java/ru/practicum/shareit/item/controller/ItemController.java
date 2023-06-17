@@ -7,7 +7,6 @@ import ru.practicum.shareit.header.HttpHeadersShareIt;
 import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingAndCommentsResponseDto;
-import ru.practicum.shareit.item.dto.ItemWithBookingResponseDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
@@ -48,10 +47,10 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemWithBookingResponseDto> findItemsWithBookingResponseDtoByOwnerId(@RequestHeader(HttpHeadersShareIt.X_SHARER_USER_ID) long ownerId,
+    public List<ItemWithBookingAndCommentsResponseDto> findItemsWithBookingResponseDtoByOwnerId(@RequestHeader(HttpHeadersShareIt.X_SHARER_USER_ID) long ownerId,
                                                                                      @RequestParam(defaultValue = "1") int from,
                                                                                      @RequestParam(defaultValue = "10") int size) {
-        return itemService.findItemsWithBookingResponseDtoByOwnerId(ownerId, from, size);
+        return itemService.findItemWithBookingAndCommentsResponseDtoByOwnerId(ownerId, from, size);
     }
 
     @GetMapping("/search")

@@ -16,7 +16,7 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long>, Q
 
     @Query("SELECT b " +
             "FROM BookingEntity AS b " +
-            "JOIN b.item AS i " +
+            "LEFT JOIN b.item AS i " +
             "WHERE b.id = ?1 " +
             "AND (b.booker.id = ?2 OR i.owner.id = ?2)")
     BookingEntity findByIdAndBookerIdOrItemOwnerId(long bookingId, long bookerId, long ownerId);
@@ -46,5 +46,12 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long>, Q
                                     "SELECT MIN(start_date) FROM bookings " +
                                     "WHERE item_id = :itemId AND start_date >= :now AND status ilike 'APPROVED' " +
                                     " )", nativeQuery = true)
-    List<BookingEntity> findLastAndNextBooking(long itemId, LocalDateTime now);
+    List<BookingShortDtoProjection> findLastAndNextBooking(long itemId, LocalDateTime now);
+
+    BookingShortDtoProjection findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(long itemId, LocalDateTime now, Status status);
+
+    BookingShortDtoProjection findFirstByItemIdAndStartAfterAndStatusOrderByStart(long itemId, LocalDateTime now, Status status);
+
+    List<BookingEntity> findAllBookingByItemOwnerId(long ownerId);
+
 }

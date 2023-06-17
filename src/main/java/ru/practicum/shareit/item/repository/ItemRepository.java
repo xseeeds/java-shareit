@@ -8,13 +8,14 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import ru.practicum.shareit.item.model.ItemEntity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<ItemEntity, Long>, QuerydslPredicateExecutor<ItemEntity> {
 
     Optional<ItemEntity> findByIdAndOwnerId(long itemId, long ownerId);
 
-    Page<ItemEntity> findAllByOwnerIdOrderById(long ownerId, Pageable page);
+    boolean existsByIdAndOwnerId(long itemId, long ownerId);
 
     @Query(value = "select * from items as iE " +
             "where iE.available = true " +
@@ -43,33 +44,35 @@ public interface ItemRepository extends JpaRepository<ItemEntity, Long>, Queryds
             "FROM " +
                 "( " +
                     "SELECT items.id, items.name, items.description, items.available, " +
-                        "(" +
+                        "( " +
                             "SELECT MAX(b3.id) " +
                                 "FROM bookings as b3 " +
                                 "WHERE start_date in " +
-                                                    "(" +
+                                                    "( " +
                                                     "SELECT MAX(start_date) " +
                                                         "FROM bookings " +
                                                         "WHERE status like 'APPROVED' AND start_date <= :now" +
                                                     ") " +
                                 "AND b3.item_id = items.id" +
                         ") AS last_booking_entity, " +
-                        "(" +
+                        "( " +
                             "SELECT MIN(b4.id) " +
                                 "FROM bookings as b4 " +
                                 "WHERE start_date in " +
-                                                    "(" +
-                                                    "SELECT MIN(START_DATE) " +
+                                                    "( " +
+                                                    "SELECT MIN(start_date) " +
                                                         "FROM bookings " +
                                                         "WHERE status like 'APPROVED' AND start_date >= :now" +
                                                     ") " +
                                 "AND b4.item_id = items.id" +
                         ") AS next_booking_entity " +
                     "FROM items " +
-                    "WHERE OWNER_ID = :ownerId" +
+                    "WHERE owner_id = :ownerId" +
                 ") AS items_bookings " +
             "LEFT JOIN bookings AS b1 ON b1.id = items_bookings.last_booking_entity " +
             "LEFT JOIN bookings AS b2 ON b2.id = items_bookings.next_booking_entity ", nativeQuery = true)
-    Page<ItemWithBookingProjection> findByOwnerWithBooking(long ownerId, LocalDateTime now, Pageable page);
+    Page<ItemWithBookingProjection> findByOwnerIdWithLastAndNextBooking(long ownerId, LocalDateTime now, Pageable page);
+
+    List<ItemEntity> findAllByOwnerIdOrderById(long ownerId);
 
 }

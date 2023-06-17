@@ -2,7 +2,6 @@ package ru.practicum.shareit.booking.service;
 
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
@@ -12,12 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
+import ru.practicum.shareit.booking.dto.BookingShortResponseDto;
 import ru.practicum.shareit.booking.enums.State;
 import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.BookingEntity;
 import ru.practicum.shareit.booking.model.QBookingEntity;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.booking.repository.BookingShortDtoProjection;
 import ru.practicum.shareit.expception.exp.BadRequestException;
 import ru.practicum.shareit.expception.exp.NotFoundException;
 import ru.practicum.shareit.expception.exp.UnknownBookingStateException;
@@ -38,12 +39,19 @@ import static java.util.stream.Collectors.toList;
 @Service
 @Validated
 @Transactional(readOnly = true)
-@RequiredArgsConstructor(onConstructor_ = @Lazy)
 @Slf4j
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final ItemService itemService;
     private final UserService userService;
+
+    public BookingServiceImpl(BookingRepository bookingRepository,
+                              @Lazy ItemService itemService,
+                              @Lazy UserService userService) {
+        this.bookingRepository = bookingRepository;
+        this.itemService = itemService;
+        this.userService = userService;
+    }
 
 
     @Validated
@@ -81,11 +89,10 @@ public class BookingServiceImpl implements BookingService {
         if (!bookingEntity.getStatus().equals(Status.WAITING)) {
             throw new BadRequestException("Статус бронирования id => " + bookingId + " не WAITING!");
         }
-        bookingEntity.setStatus((approved ? Status.APPROVED : Status.REJECTED));
+        bookingEntity.setStatus(approved ? Status.APPROVED : Status.REJECTED);
         final BookingResponseDto savedBookingResponseDto = BookingMapper
                 .toBookingResponseDto(
-                        bookingRepository.save(
-                                bookingEntity));
+                        bookingRepository.save(bookingEntity));
         log.info((approved ? "Approved" : "Rejected") + " бронирование id => {}", bookingId);
         return savedBookingResponseDto;
 
@@ -105,7 +112,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingResponseDto> findBookings(@Positive long userId,
-            /*@ValidStateParameter*/ String state,
+                                                 String state,
                                                  @PositiveOrZero int from,
                                                  @Positive int size,
                                                  boolean bookerIdOrOwnerId) throws NotFoundException {
@@ -179,11 +186,51 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingEntity> findLastAndNextBookingEntity(@Positive long itemId, LocalDateTime now) {
-        final List<BookingEntity> findLastAndNextBookingEntity = bookingRepository.findLastAndNextBooking(itemId, now);
-        log.info("Предыдущее и следующее бронирования получены size => {} вещи по id => {}",
-                findLastAndNextBookingEntity.size(), itemId);
-        return findLastAndNextBookingEntity;
+    public List<BookingShortResponseDto> findLastAndNextBookingEntity(@Positive long itemId, LocalDateTime now) {
+        final List<BookingShortDtoProjection> findLastAndNextProjection = bookingRepository.findLastAndNextBooking(itemId, now);
+        log.info("Предыдущее и следующее бронирования получены для СЕРВИСОВ size => {} вещи по id => {}",
+                findLastAndNextProjection.size(), itemId);
+        return findLastAndNextProjection
+                .stream()
+                .map(BookingMapper::toBookingShortResponseDto)
+                .collect(toList());
+    }
+
+    @Override
+    public BookingShortResponseDto findLastBooking(@Positive long itemId, LocalDateTime now) {
+        final BookingShortDtoProjection bookingShortDtoProjection = bookingRepository
+                .findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(itemId, now, Status.APPROVED);
+        if (bookingShortDtoProjection == null) {
+            log.info("Предыдущего бронирования для вещи по id => {} для СЕРВИСОВ не найдено", itemId);
+            return null;
+        }
+        final BookingShortResponseDto bookingShortDto =
+                BookingMapper.toBookingShortResponseDto(bookingShortDtoProjection);
+        log.info("Предыдущее бронирование по id => {} для СЕРВИСОВ получено для вещи по id => {}", bookingShortDto.getId(), itemId);
+        return bookingShortDto;
+    }
+
+    @Override
+    public BookingShortResponseDto findNextBooking(@Positive long itemId,  LocalDateTime now) {
+        final BookingShortDtoProjection bookingShortDtoProjection = bookingRepository
+                .findFirstByItemIdAndStartAfterAndStatusOrderByStart(itemId, now, Status.APPROVED);
+        if (bookingShortDtoProjection == null) {
+            log.info("Следующего бронирования для вещи по id => {} для СЕРВИСОВ не найдено", itemId);
+            return null;
+        }
+        final BookingShortResponseDto bookingShortDto =
+                BookingMapper.toBookingShortResponseDto(bookingShortDtoProjection);
+        log.info("Следующее бронирование по id => {} для СЕРВИСОВ получено для вещи по id => {}", bookingShortDto.getId(), itemId);
+        return bookingShortDto;
+    }
+
+    @Override
+    public List<BookingEntity> findAllBookingByItemOwnerId(@Positive long ownerId) {
+        final List<BookingEntity> bookingEntityList = bookingRepository
+                .findAllBookingByItemOwnerId(ownerId);
+        log.info("Бронирования получены для СЕРВИСОВ size => {} владельца вещей по id => {}",
+                bookingEntityList.size(), ownerId);
+        return bookingEntityList;
     }
 
 }

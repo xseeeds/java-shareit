@@ -8,16 +8,19 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+import ru.practicum.shareit.booking.dto.BookingShortResponseDto;
+import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
+import ru.practicum.shareit.booking.model.BookingEntity;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.expception.exp.BadRequestException;
 import ru.practicum.shareit.expception.exp.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingAndCommentsResponseDto;
-import ru.practicum.shareit.item.dto.ItemWithBookingResponseDto;
 import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.CommentEntity;
 import ru.practicum.shareit.item.model.ItemEntity;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -32,7 +35,9 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -54,9 +59,9 @@ public class ItemServiceImpl implements ItemService {
     public ItemResponseDto createItem(@Positive long ownerId,
                                       @Valid ItemResponseDto itemResponseDto) {
         userService.checkUserIsExistById(ownerId);
-        final ItemResponseDto savedItem = ItemMapper.toItemDto(
+        final ItemResponseDto savedItem = ItemMapper.toItemResponseDto(
                 itemRepository.save(
-                        ItemMapper.toItem(itemResponseDto, ownerId)
+                        ItemMapper.toItemEntity(itemResponseDto, ownerId)
                 )
         );
         log.info("Пользователем с id => {} создана вещь с id => {}", ownerId, savedItem.getId());
@@ -66,7 +71,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemResponseDto findItemDtoById(@Positive long itemId) throws NotFoundException {
-        final ItemResponseDto foundItem = ItemMapper.toItemDto(
+        final ItemResponseDto foundItem = ItemMapper.toItemResponseDto(
                 itemRepository.findById(itemId)
                         .orElseThrow(
                                 () -> new NotFoundException("Вещь по id => " + itemId + " не существует")
@@ -86,27 +91,21 @@ public class ItemServiceImpl implements ItemService {
         final List<CommentResponseDto> commentResponseDtoList = commentRepository
                 .findAllByItemIdOrderByCreatedDesc(itemId)
                 .stream()
-                .map(commentEntity ->  CommentMapper.toCommentResponseDto(
-                                commentEntity, commentEntity.getAuthor().getName()))
+                .map(commentEntity -> CommentMapper.toCommentResponseDto(
+                        commentEntity, commentEntity.getAuthor().getName()))
                 .collect(toList());
 
         final ItemWithBookingAndCommentsResponseDto itemWithBookingAndCommentsResponseDto = ItemMapper
                 .toItemWithCommentsResponseDto(itemEntity, commentResponseDtoList);
 
         if (itemEntity.getOwner().getId().equals(userId)) {
-            final LocalDateTime now = LocalDateTime.now();
-            bookingService
-                    .findLastAndNextBookingEntity(itemEntity.getId(), now)
-                    .forEach(bookingEntity -> {
-                        if (bookingEntity.getStart().isBefore(now)) {
-                            itemWithBookingAndCommentsResponseDto.setLastBooking(BookingMapper.toBookingShortResponseDto(bookingEntity));
-                        } else if (bookingEntity.getStart().isAfter(now)) {
-                            itemWithBookingAndCommentsResponseDto.setNextBooking(BookingMapper.toBookingShortResponseDto(bookingEntity));
-                        }
-                    });
+            final BookingShortResponseDto lastBooking = bookingService.findLastBooking(itemId, LocalDateTime.now());
+            final BookingShortResponseDto nextBooking = bookingService.findNextBooking(itemId, LocalDateTime.now());
+            itemWithBookingAndCommentsResponseDto.setLastBooking(lastBooking);
+            itemWithBookingAndCommentsResponseDto.setNextBooking(nextBooking);
             log.info("Владелец по id => {}", userId);
         }
-        log.info("Пользователь по id => {} выполнил запрос на вещь с бронированием и комментариями по id => {} получена", userId, itemId);
+        log.info("Пользователь по id => {} выполнил запрос findItemById, вещь с бронированием и комментариями по id => {} получена", userId, itemId);
         return itemWithBookingAndCommentsResponseDto;
     }
 
@@ -131,7 +130,7 @@ public class ItemServiceImpl implements ItemService {
         if (itemResponseDto.getAvailable() != null) {
             itemEntity.setAvailable(itemResponseDto.getAvailable());
         }
-        final ItemResponseDto savedItem = ItemMapper.toItemDto(itemEntity);
+        final ItemResponseDto savedItem = ItemMapper.toItemResponseDto(itemEntity);
         log.info("Пользователем с id => {} обновлена вещь с id => {}", ownerId, itemId);
         return savedItem;
     }
@@ -141,13 +140,11 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void deleteItemById(@Positive long ownerId,
                                @Positive long itemId) throws NotFoundException {
-        final ItemEntity itemEntity = itemRepository
-                .findByIdAndOwnerId(itemId, ownerId)
-                .orElseThrow(
-                        () -> new NotFoundException("Вещь по id => " + itemId
-                                + " не принадлежит пользователю с id => " + ownerId)
-                );
-        itemRepository.delete(itemEntity);
+        if (!itemRepository.existsByIdAndOwnerId(itemId, ownerId)) {
+            throw new NotFoundException("Вещь по id => " + itemId
+                    + " не принадлежит пользователю с id => " + ownerId);
+        }
+        itemRepository.deleteById(itemId);
         log.info("Пользователем с id => {} удалена вещь с id => {}", ownerId, itemId);
     }
 
@@ -155,24 +152,83 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemResponseDto> findItemsResponseDtoByOwnerId(@Positive long ownerId,
                                                                @PositiveOrZero int from,
                                                                @Positive int size) {
-        final Page<ItemResponseDto> page = itemRepository
-                .findAllByOwnerIdOrderById(ownerId, Util.getPageSortById(from, size))
-                .map(ItemMapper::toItemDto);
-        log.info("Вещи получены size => {}", page.getTotalElements());
-        return page.getContent();
+        final List<ItemResponseDto> page = itemRepository
+                .findAllByOwnerIdOrderById(ownerId)
+                .stream()
+                .map(ItemMapper::toItemResponseDto)
+                .collect(toList());
+        log.info("Вещи получены size => {}", page.size());
+        return page;
     }
 
     @Override
-    public List<ItemWithBookingResponseDto> findItemsWithBookingResponseDtoByOwnerId(@Positive long ownerId,
-                                                                                     @PositiveOrZero int from,
-                                                                                     @Positive int size) {
+    public List<ItemWithBookingAndCommentsResponseDto> findItemWithBookingAndCommentsResponseDtoByOwnerId(@Positive long ownerId,
+                                                                                                          @PositiveOrZero int from,
+                                                                                                          @Positive int size) {
         userService.checkUserIsExistById(ownerId);
-        final Page<ItemWithBookingResponseDto> page = itemRepository
-                .findByOwnerWithBooking(ownerId, LocalDateTime.now(), Util.getPageSortById(from, size))
-                .map(ItemMapper::toItemWithBookingResponseDto);
-        log.info("Вещи с бронированиями получены size => {}", page.getTotalElements());
-        return page.getContent();
+        final List<BookingEntity> bookingEntityList = bookingService
+                .findAllBookingByItemOwnerId(ownerId);
+        final List<ItemEntity> itemEntityList = itemRepository
+                .findAllByOwnerIdOrderById(ownerId);
+        final List<Long> itemIds = itemEntityList
+                .stream()
+                .map(ItemEntity::getId)
+                .collect(toList());
+        final List<CommentEntity> commentEntityList = commentRepository
+                .findAllByItemIdIn(itemIds);
 
+        final List<ItemWithBookingAndCommentsResponseDto> itemWithBookingAndCommentsResponseDtoList = itemEntityList
+                .stream()
+                .map(itemEntity -> {
+                    BookingShortResponseDto lastBooking = null;
+                    BookingShortResponseDto nextBooking = null;
+
+                    final List<CommentResponseDto> commentEntityListByItemIdOrderByCreatedDesc = commentEntityList
+                            .stream()
+                            .filter(commentEntity -> commentEntity.getItemId().equals(itemEntity.getId()))
+                            .sorted(Comparator
+                                    .comparing(CommentEntity::getCreated).reversed())
+                            .map(commentEntity -> CommentMapper
+                                    .toCommentResponseDto(commentEntity, commentEntity.getAuthor().getName()))
+                            .collect(toList());
+
+                    final LocalDateTime now = LocalDateTime.now();
+
+                    if (!bookingEntityList.isEmpty()) {
+
+                        final Optional<BookingEntity> bookingLast = bookingEntityList
+                                .stream()
+                                .filter(bookingEntity ->
+                                        bookingEntity.getItem().getId().equals(itemEntity.getId())
+                                                && bookingEntity.getStatus().equals(Status.APPROVED)
+                                                && bookingEntity.getStart().isBefore(now))
+                                .max(Comparator
+                                        .comparing(BookingEntity::getStart));
+
+                        final Optional<BookingEntity> bookingNext = bookingEntityList
+                                .stream()
+                                .filter(bookingEntity ->
+                                        bookingEntity.getItem().getId().equals(itemEntity.getId())
+                                                && bookingEntity.getStatus().equals(Status.APPROVED)
+                                                && bookingEntity.getStart().isAfter(now))
+                                .min(Comparator
+                                        .comparing(BookingEntity::getStart));
+
+                        if (bookingLast.isPresent()) {
+                            lastBooking = BookingMapper.toBookingShortResponseDto(bookingLast.get());
+                        }
+                        if (bookingNext.isPresent()) {
+                            nextBooking = BookingMapper.toBookingShortResponseDto(bookingNext.get());
+                        }
+
+                    }
+                    return ItemMapper
+                            .toItemWithBookingAndCommentsResponseDto(
+                                    itemEntity, lastBooking, nextBooking, commentEntityListByItemIdOrderByCreatedDesc);
+                })
+                .collect(toList());
+        log.info("Вещи получены size => {}", itemWithBookingAndCommentsResponseDtoList.size());
+        return itemWithBookingAndCommentsResponseDtoList;
     }
 
     @Override
@@ -185,7 +241,7 @@ public class ItemServiceImpl implements ItemService {
         }
         final Page<ItemResponseDto> page = itemRepository
                 .findItemIsNotRentedByNameOrDescription(text, Util.getPageSortById(from, size))
-                .map(ItemMapper::toItemDto);
+                .map(ItemMapper::toItemResponseDto);
         log.info("Вещи получены size => {}, по запросу => {} ", page.getTotalElements(), text);
         return page.getContent();
     }

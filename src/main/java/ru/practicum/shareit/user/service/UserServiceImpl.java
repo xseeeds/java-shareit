@@ -35,9 +35,9 @@ public class UserServiceImpl implements UserService {
     @Modifying
     @Override
     public UserResponseDto createUser(@Valid UserResponseDto userResponseDto) {
-        final UserResponseDto savedUser = UserMapper.toUserDto(
+        final UserResponseDto savedUser = UserMapper.toUserResponseDto(
                 userRepository.save(
-                        UserMapper.toUser(userResponseDto)
+                        UserMapper.toUserEntity(userResponseDto)
                 )
         );
         log.info("Пользователь c id => {} сохранен", savedUser.getId());
@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto findUserById(@Positive long userId) throws NotFoundException {
-        final UserResponseDto foundUser = UserMapper.toUserDto(
+        final UserResponseDto foundUser = UserMapper.toUserResponseDto(
                 userRepository.findById(userId)
                         .orElseThrow(
                                 () -> new NotFoundException("Пользователь по id => " + userId + " не существует")));
@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
         if (userResponseDto.getName() != null) {
             userEntity.setName(userResponseDto.getName());
         }
-        UserResponseDto updatedUser = UserMapper.toUserDto(userEntity);
+        UserResponseDto updatedUser = UserMapper.toUserResponseDto(userEntity);
         log.info("Пользователь по id => {} обновлен", userId);
         return updatedUser;
     }
@@ -90,7 +90,7 @@ public class UserServiceImpl implements UserService {
                                                         @Positive int size) {
         final Page<UserResponseDto> page = userRepository
                 .findAll(Util.getPageSortById(from, size))
-                .map(UserMapper::toUserDto);
+                .map(UserMapper::toUserResponseDto);
         log.info("Пользователи получены size => {}", page.getTotalElements());
         return page.getContent();
     }
