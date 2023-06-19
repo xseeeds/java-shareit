@@ -1,24 +1,14 @@
 package ru.practicum.shareit.user.repository;
 
-import ru.practicum.shareit.expception.exp.ConflictException;
-import ru.practicum.shareit.expception.exp.NotFoundException;
-import ru.practicum.shareit.user.dto.UserDto;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import ru.practicum.shareit.user.model.UserEntity;
 
-import java.util.List;
+import java.util.Optional;
 
-public interface UserRepository {
 
-    List<UserDto> getAllUser();
+public interface UserRepository extends JpaRepository<UserEntity, Long>, QuerydslPredicateExecutor<UserEntity> {
 
-    UserDto getUserById(long userId);
+    Optional<UserNameProjection> findNameById(long userId);
 
-    UserDto createUser(UserDto userDto) throws ConflictException;
-
-    UserDto updateUser(long userId, UserDto userDto) throws NotFoundException, ConflictException;
-
-    void deleteUser(long userId);
-
-    void checkExistUserById(long userId) throws NotFoundException;
-
-    void checkEmailByExistUserEmails(String email, Long userId) throws ConflictException;
 }

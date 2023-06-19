@@ -1,14 +1,17 @@
 package ru.practicum.shareit.expception.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.expception.exp.BadRequestException;
 import ru.practicum.shareit.expception.exp.ConflictException;
 import ru.practicum.shareit.expception.exp.NotFoundException;
+import ru.practicum.shareit.expception.exp.UnknownBookingStateException;
 import ru.practicum.shareit.expception.model.ErrorResponse;
 import ru.practicum.shareit.expception.model.ValidationErrorResponse;
 import ru.practicum.shareit.expception.model.Violation;
@@ -29,49 +32,24 @@ public class ErrorHandler {
             final BadRequestException e
     ) {
         log.error(e.getMessage(), e);
-        return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), "errorBadRequestException", e.getMessage());
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                "errorBadRequestException", e.getMessage());
     }
 
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(NotFoundException.class)
-    public ErrorResponse errorNotFoundException(
-            final NotFoundException e
-    ) {
+    @ExceptionHandler(UnknownBookingStateException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse errorUnknownBookingStateException(final UnknownBookingStateException e) {
         log.error(e.getMessage(), e);
-        return new ErrorResponse(HttpStatus.NOT_FOUND.toString(),
-                "errorNotFoundException", e.getMessage());
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                e.getMessage(), "errorUnknownBookingStateException");
     }
 
-    @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(ConflictException.class)
-    public ErrorResponse errorConflictException(
-            final ConflictException e
-    ) {
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ErrorResponse errorMissingRequestHeaderException(final MissingRequestHeaderException e) {
         log.error(e.getMessage(), e);
-        return new ErrorResponse(HttpStatus.CONFLICT.toString(),
-                "errorConflictException", e.getMessage());
-    }
-
-    @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
-    public ErrorResponse errorConflictException(
-            final SQLIntegrityConstraintViolationException e
-    ) {
-        log.error(e.getMessage(), e);
-        final int endIndex = nthIndexOf(e.getMessage(), ")", 2);
-        return new ErrorResponse(HttpStatus.CONFLICT.toString(),
-                "errorSQLIntegrityConstraintViolationException", e.getMessage().substring(0, endIndex + 1));
-    }
-
-    @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(SQLSyntaxErrorException.class)
-    public ErrorResponse errorConflictException(
-            final SQLSyntaxErrorException e
-    ) {
-        log.error(e.getMessage(), e);
-        final int endIndex = nthIndexOf(e.getMessage(), "\n", 1);
-        return new ErrorResponse(HttpStatus.CONFLICT.toString(),
-                "errorSQLSyntaxErrorException", e.getMessage().substring(0, endIndex));
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                "errorMissingRequestHeaderException", e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -111,6 +89,57 @@ public class ErrorHandler {
         return new ValidationErrorResponse(errorRequestBody);
     }
 
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(NotFoundException.class)
+    public ErrorResponse errorNotFoundException(
+            final NotFoundException e
+    ) {
+        log.error(e.getMessage(), e);
+        return new ErrorResponse(HttpStatus.NOT_FOUND.toString(),
+                "errorNotFoundException", e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ConflictException.class)
+    public ErrorResponse errorConflictException(
+            final ConflictException e
+    ) {
+        log.error(e.getMessage(), e);
+        return new ErrorResponse(HttpStatus.CONFLICT.toString(),
+                "errorConflictException", e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ErrorResponse onDataIntegrityViolationException(
+            final DataIntegrityViolationException e
+    ) {
+        log.error(e.getMessage(), e);
+        return new ErrorResponse(HttpStatus.CONFLICT.toString(),
+                "errorDataIntegrityViolationException", e.getMostSpecificCause().getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+    public ErrorResponse errorConflictException(
+            final SQLIntegrityConstraintViolationException e
+    ) {
+        log.error(e.getMessage(), e);
+        final int endIndex = nthIndexOf(e.getMessage(), ")", 2);
+        return new ErrorResponse(HttpStatus.CONFLICT.toString(),
+                "errorSQLIntegrityConstraintViolationException", e.getMessage().substring(0, endIndex + 1));
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(SQLSyntaxErrorException.class)
+    public ErrorResponse errorConflictException(
+            final SQLSyntaxErrorException e
+    ) {
+        log.error(e.getMessage(), e);
+        final int endIndex = nthIndexOf(e.getMessage(), "\n", 1);
+        return new ErrorResponse(HttpStatus.CONFLICT.toString(),
+                "errorSQLSyntaxErrorException", e.getMessage().substring(0, endIndex));
+    }
 
     private int nthIndexOf(String str, String substr, int nth) {
         int pos = str.indexOf(substr);

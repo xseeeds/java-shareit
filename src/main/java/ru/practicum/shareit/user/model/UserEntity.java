@@ -5,7 +5,7 @@ import lombok.*;
 import javax.persistence.*;
 
 
-@Value
+@Data
 @Builder(toBuilder = true)
 @Entity
 @Table(name = "users")
@@ -15,9 +15,10 @@ public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
-    String name;
+    private String name;
 
-    String email;
+    @Column(unique = true)
+    private String email;
 }

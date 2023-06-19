@@ -8,7 +8,7 @@ import javax.validation.constraints.*;
 
 @Value
 @Builder(toBuilder = true)
-public class UserDto {
+public class UserResponseDto {
 
     @Positive(groups = Marker.OnUpdate.class)
     Long id;
