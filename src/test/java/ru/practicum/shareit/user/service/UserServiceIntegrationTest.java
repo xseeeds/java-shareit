@@ -39,7 +39,7 @@ public class UserServiceIntegrationTest {
 
         final UserEntity userEntity = userService.findUserEntityById(userResponseDto.getId());
 
-        assertThat(userEntity.getId(), equalTo(1L));
+        assertThat(userEntity.getId(), equalTo(userResponseDto.getId()));
         assertThrows(NotFoundException.class, () -> userService
                 .findUserEntityById(userEntity.getId() + 1));
     }
