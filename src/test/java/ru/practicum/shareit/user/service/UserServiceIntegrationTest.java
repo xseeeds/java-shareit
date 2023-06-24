@@ -34,9 +34,10 @@ public class UserServiceIntegrationTest {
                 .name("Name")
                 .email("user@ya.ru")
                 .build();
-        userService.createUser(user);
 
-        final UserEntity userEntity = userService.findUserEntityById(1L);
+        final UserResponseDto userResponseDto = userService.createUser(user);
+
+        final UserEntity userEntity = userService.findUserEntityById(userResponseDto.getId());
 
         assertThat(userEntity.getId(), equalTo(1L));
         assertThrows(NotFoundException.class, () -> userService
