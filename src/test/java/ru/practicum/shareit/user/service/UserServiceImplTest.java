@@ -159,7 +159,7 @@ class UserServiceImplTest {
 
         final UserNameProjection userNameProjection = userService.findNameByUserId(1L);
 
-        assertThat(userNameProjection.getName(), equalTo( "Пётр"));
+        assertThat(userNameProjection.getName(), equalTo("Пётр"));
 
         verify(userRepository, times(1))
                 .findNameById(anyLong());

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 class ShareItAppTest {
 
 	@Test
-	void Main() {
+	void main() {
 		Assertions.assertDoesNotThrow(ShareItApp::new);
 		Assertions.assertDoesNotThrow(() -> ShareItApp.main(new String[]{}));
 	}
