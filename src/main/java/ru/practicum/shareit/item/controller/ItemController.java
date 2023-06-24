@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.header.HttpHeadersShareIt;
+import ru.practicum.shareit.item.dto.CommentRequestDto;
 import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingAndCommentsResponseDto;
@@ -26,10 +27,11 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemWithBookingAndCommentsResponseDto findItemDtoById(@RequestHeader(HttpHeadersShareIt.X_SHARER_USER_ID) long userId,
-                                                                 @PathVariable long itemId,
-                                                                 @RequestParam(defaultValue = "1") int from,
-                                                                 @RequestParam(defaultValue = "10") int size) {
+    public ItemWithBookingAndCommentsResponseDto findItemDtoById(
+            @RequestHeader(HttpHeadersShareIt.X_SHARER_USER_ID) long userId,
+            @PathVariable long itemId,
+            @RequestParam(value = "from", required = false, defaultValue = "0") int from,
+            @RequestParam(value = "size", required = false, defaultValue = "10") int size) {
         return itemService.findItemWithBookingAndCommentsResponseDtoById(userId, itemId, from, size);
     }
 
@@ -47,17 +49,19 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemWithBookingAndCommentsResponseDto> findItemsWithBookingResponseDtoByOwnerId(@RequestHeader(HttpHeadersShareIt.X_SHARER_USER_ID) long ownerId,
-                                                                                     @RequestParam(defaultValue = "1") int from,
-                                                                                     @RequestParam(defaultValue = "10") int size) {
+    public List<ItemWithBookingAndCommentsResponseDto> findItemsWithBookingResponseDtoByOwnerId(
+            @RequestHeader(HttpHeadersShareIt.X_SHARER_USER_ID) long ownerId,
+            @RequestParam(value = "from", required = false, defaultValue = "0") int from,
+            @RequestParam(value = "size", required = false, defaultValue = "10") int size) {
         return itemService.findItemWithBookingAndCommentsResponseDtoByOwnerId(ownerId, from, size);
     }
 
     @GetMapping("/search")
-    public List<ItemResponseDto> findItemsIsNotRentedByNameOrDescription(@RequestParam(value = "text") String text,
-                                                                         @RequestParam(defaultValue = "1") int from,
-                                                                         @RequestParam(defaultValue = "10") int size) {
-        return itemService.findItemsIsNotRentedByNameOrDescription(text, from, size);
+    public List<ItemResponseDto> findItemIsAvailableByNameOrDescription(
+            @RequestParam(value = "text") String text,
+            @RequestParam(value = "from", required = false, defaultValue = "0") int from,
+            @RequestParam(value = "size", required = false, defaultValue = "10") int size) {
+        return itemService.findItemIsAvailableByNameOrDescription(text, from, size);
     }
 
 
@@ -65,8 +69,8 @@ public class ItemController {
     @Validated
     public CommentResponseDto createComment(@RequestHeader(HttpHeadersShareIt.X_SHARER_USER_ID) long bookerId,
                                             @PathVariable long itemId,
-                                            @RequestBody CommentResponseDto commentResponseDto) {
-        return itemService.createComment(commentResponseDto, itemId, bookerId);
+                                            @RequestBody CommentRequestDto commentRequestDto) {
+        return itemService.createComment(bookerId, itemId, commentRequestDto);
     }
 
 

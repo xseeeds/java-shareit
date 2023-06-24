@@ -37,12 +37,12 @@ public interface UserService {
     @Modifying
     void deleteUserById(@Positive long userId) throws NotFoundException;
 
-    List<UserResponseDto> findAllUserResponseDto(@PositiveOrZero int from,
-                                                 @Positive int size);
+    List<UserResponseDto> findAllUsers(@PositiveOrZero int from,
+                                       @Positive int size);
 
-    UserNameProjection findNameByUserId(long userId);
+    UserNameProjection findNameByUserId(long userId) throws NotFoundException;
 
-    UserEntity findUserEntityById(@Positive long userId);
+    UserEntity findUserEntityById(@Positive long userId) throws NotFoundException;
 
-    void checkUserIsExistById(@Positive long userId);
+    void checkUserIsExistById(@Positive long userId) throws NotFoundException;
 }

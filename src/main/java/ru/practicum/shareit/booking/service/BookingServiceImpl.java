@@ -4,7 +4,7 @@ import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,8 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.dto.BookingShortResponseDto;
-import ru.practicum.shareit.booking.enums.State;
-import ru.practicum.shareit.booking.enums.Status;
+import ru.practicum.shareit.booking.status.Status;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.BookingEntity;
 import ru.practicum.shareit.booking.model.QBookingEntity;
@@ -25,16 +24,15 @@ import ru.practicum.shareit.expception.exp.UnknownBookingStateException;
 import ru.practicum.shareit.item.model.ItemEntity;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.util.Util;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
-import static java.util.stream.Collectors.toList;
 
 @Service
 @Validated
@@ -44,6 +42,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final ItemService itemService;
     private final UserService userService;
+
 
     public BookingServiceImpl(BookingRepository bookingRepository,
                               @Lazy ItemService itemService,
@@ -58,14 +57,13 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     @Modifying
     @Override
-    public BookingResponseDto createBooking(@Valid BookingRequestDto bookingRequestDto,
-                                            @Positive long bookerId) throws NotFoundException, BadRequestException {
+    public BookingResponseDto createBooking(@Positive long bookerId, @Valid BookingRequestDto bookingRequestDto) throws NotFoundException, BadRequestException {
         final ItemEntity itemEntity = itemService.findItemEntityById(bookingRequestDto.getItemId());
         if (!itemEntity.getAvailable()) {
-            throw new BadRequestException("Вещь не доступна для бронирования");
+            throw new BadRequestException("Вещь id => " + itemEntity.getId() + " не доступна для бронирования");
         }
         if (itemEntity.getOwnerId() == bookerId) {
-            throw new NotFoundException("Пользователь не может забронировать свою вещь");
+            throw new NotFoundException("Пользователь id => " + bookerId + " не может забронировать свою вещь id => " + itemEntity.getId());
         }
         userService.checkUserIsExistById(bookerId);
         final BookingResponseDto savedBooking = BookingMapper
@@ -82,17 +80,23 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponseDto approveBookingById(@Positive long ownerId,
                                                  @Positive long bookingId,
                                                  boolean approved) throws NotFoundException, BadRequestException {
-        final BookingEntity bookingEntity = bookingRepository.findByIdAndItemOwnerId(bookingId, ownerId);
+        BookingEntity bookingEntity = bookingRepository.findByIdAndItemOwnerId(bookingId, ownerId);
         if (bookingEntity == null) {
             throw new NotFoundException("Пользователем по id => " + ownerId + " бронирование по id => " + bookingId + " не найдено");
         }
         if (!bookingEntity.getStatus().equals(Status.WAITING)) {
             throw new BadRequestException("Статус бронирования id => " + bookingId + " не WAITING!");
         }
-        bookingEntity.setStatus(approved ? Status.APPROVED : Status.REJECTED);
+
+        bookingEntity = bookingEntity
+                .toBuilder()
+                .status(approved ? Status.APPROVED : Status.REJECTED)
+                .build();
+
         final BookingResponseDto savedBookingResponseDto = BookingMapper
                 .toBookingResponseDto(
                         bookingRepository.save(bookingEntity));
+
         log.info((approved ? "Approved" : "Rejected") + " бронирование id => {}", bookingId);
         return savedBookingResponseDto;
 
@@ -112,17 +116,10 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingResponseDto> findBookings(@Positive long userId,
-                                                 String state,
+                                                 @NotNull String state,
                                                  @PositiveOrZero int from,
                                                  @Positive int size,
-                                                 boolean bookerIdOrOwnerId) throws NotFoundException {
-        final State s;
-        try {
-            s = State.valueOf(state);
-        } catch (IllegalArgumentException e) {
-            throw new UnknownBookingStateException("Unknown state: " + state);
-        }
-
+                                                 boolean bookerIdOrOwnerId) throws NotFoundException, BadRequestException {
         userService.checkUserIsExistById(userId);
 
         final LocalDateTime now = LocalDateTime.now();
@@ -134,66 +131,48 @@ public class BookingServiceImpl implements BookingService {
             predicateList.add(QBookingEntity.bookingEntity.item.owner.id.eq(userId));
         }
 
-        switch (s) {
-            case ALL:
+        switch (state) {
+            case "ALL":
                 break;
-            case CURRENT:
+            case "CURRENT":
                 predicateList.add(QBookingEntity.bookingEntity.start.before(now)
                         .and(QBookingEntity.bookingEntity.end.after(now)));
                 break;
-            case PAST:
+            case "PAST":
                 predicateList.add(QBookingEntity.bookingEntity.end.before(now));
                 break;
-            case FUTURE:
+            case "FUTURE":
                 predicateList.add(QBookingEntity.bookingEntity.start.after(now));
                 break;
-            case WAITING:
+            case "WAITING":
                 predicateList.add(QBookingEntity.bookingEntity.status.eq(Status.WAITING));
                 break;
-            case REJECTED:
+            case "REJECTED":
                 predicateList.add(QBookingEntity.bookingEntity.status.eq(Status.REJECTED));
                 break;
+            default:
+                throw new UnknownBookingStateException("Unknown state: " + state);
         }
 
         final Predicate totalPredicate = ExpressionUtils.allOf(predicateList);
-        final Sort sort = Sort.by(Sort.Direction.DESC, "start");
+
         assert totalPredicate != null;
-        final List<BookingEntity> bookingEntityList = (List<BookingEntity>) bookingRepository.findAll(totalPredicate, sort);
-        final List<BookingResponseDto> bookingResponses = bookingEntityList
-                .stream()
-                .map(BookingMapper::toBookingResponseDto)
-                .collect(toList());
+        final Page<BookingResponseDto> bookingResponsesPage = bookingRepository
+                .findAll(totalPredicate,
+                        Util.getPageSortDescByProperties(from, size, "start"))
+                .map(BookingMapper::toBookingResponseDto);
         log.info("Бронирования пользователя с id => {} , bookerOrOwner {} id => {}, кол-во => {} получены", userId,
-                bookerIdOrOwnerId ? "booker" : "owner", userId, bookingResponses.size());
-        return bookingResponses;
-
+                bookerIdOrOwnerId ? "booker" : "owner", userId, bookingResponsesPage.getTotalElements());
+        return bookingResponsesPage.getContent();
     }
 
     @Override
-    public Optional<BookingEntity> findBookingWithUserBookedItemStatusApproved(@Positive long itemId,
-                                                                               @Positive long bookerId) {
-        log.info("findBookingWithUserBookedItemStatusApproved");
-        return bookingRepository.findFirstByItemIdAndBookerIdAndEndIsBeforeAndStatus(itemId,
-                bookerId, LocalDateTime.now(), Status.APPROVED);
-    }
-
-    @Override
-    public boolean checkBookingWithUserBookedItemStatusApproved(@Positive long itemId,
-                                                                @Positive long bookerId) {
-        log.info("checkBookingWithUserBookedItemStatusApproved");
+    public boolean checkExistsByItemIdAndBookerIdAndEndIsBeforeNowAndStatusApproved(@Positive long itemId,
+                                                                                    @Positive long bookerId) {
+        log.info("checkExistsByItemIdAndBookerIdAndEndIsBeforeNowAndStatusApproved item id => {}, bookerId => {}",
+                itemId, bookerId);
         return bookingRepository.existsByItemIdAndBookerIdAndEndIsBeforeAndStatus(itemId,
                 bookerId, LocalDateTime.now(), Status.APPROVED);
-    }
-
-    @Override
-    public List<BookingShortResponseDto> findLastAndNextBookingEntity(@Positive long itemId, LocalDateTime now) {
-        final List<BookingShortDtoProjection> findLastAndNextProjection = bookingRepository.findLastAndNextBooking(itemId, now);
-        log.info("Предыдущее и следующее бронирования получены для СЕРВИСОВ size => {} вещи по id => {}",
-                findLastAndNextProjection.size(), itemId);
-        return findLastAndNextProjection
-                .stream()
-                .map(BookingMapper::toBookingShortResponseDto)
-                .collect(toList());
     }
 
     @Override
@@ -211,7 +190,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingShortResponseDto findNextBooking(@Positive long itemId,  LocalDateTime now) {
+    public BookingShortResponseDto findNextBooking(@Positive long itemId, LocalDateTime now) {
         final BookingShortDtoProjection bookingShortDtoProjection = bookingRepository
                 .findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(itemId, now, Status.APPROVED);
         if (bookingShortDtoProjection == null) {

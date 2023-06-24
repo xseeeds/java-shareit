@@ -1,10 +1,13 @@
 package ru.practicum.shareit.expception.controller;
 
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import lombok.Generated;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -24,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice("ru.practicum.shareit")
+@Generated
 public class ErrorHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -45,8 +49,31 @@ public class ErrorHandler {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MismatchedInputException.class)
+    public ErrorResponse errorMismatchedInputException(
+            final MismatchedInputException e
+    ) {
+        log.error(e.getMessage(), e);
+        final int endIndex = nthIndexOf(e.getMessage(), "\n", 1);
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                "errorMismatchedInputException", e.getMessage().substring(0, endIndex));
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ErrorResponse errorMissingServletRequestParameterException(
+            final MissingServletRequestParameterException e
+    ) {
+        log.error(e.getMessage(), e);
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                "errorMissingServletRequestParameterException", e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MissingRequestHeaderException.class)
-    public ErrorResponse errorMissingRequestHeaderException(final MissingRequestHeaderException e) {
+    public ErrorResponse errorMissingRequestHeaderException(
+            final MissingRequestHeaderException e
+    ) {
         log.error(e.getMessage(), e);
         return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
                 "errorMissingRequestHeaderException", e.getMessage());
@@ -115,13 +142,14 @@ public class ErrorHandler {
             final DataIntegrityViolationException e
     ) {
         log.error(e.getMessage(), e);
+        final int endIndex = nthIndexOf(e.getMostSpecificCause().getMessage(), ")", 2);
         return new ErrorResponse(HttpStatus.CONFLICT.toString(),
-                "errorDataIntegrityViolationException", e.getMostSpecificCause().getMessage());
+                "errorDataIntegrityViolationException", e.getMostSpecificCause().getMessage().substring(0, endIndex + 1));
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
-    public ErrorResponse errorConflictException(
+    public ErrorResponse errorSQLIntegrityConstraintViolationException(
             final SQLIntegrityConstraintViolationException e
     ) {
         log.error(e.getMessage(), e);
@@ -132,7 +160,7 @@ public class ErrorHandler {
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(SQLSyntaxErrorException.class)
-    public ErrorResponse errorConflictException(
+    public ErrorResponse errorSQLSyntaxErrorException(
             final SQLSyntaxErrorException e
     ) {
         log.error(e.getMessage(), e);

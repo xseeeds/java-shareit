@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import ru.practicum.shareit.item.model.ItemEntity;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,58 +20,10 @@ public interface ItemRepository extends JpaRepository<ItemEntity, Long>, Queryds
             "where iE.available = true " +
             "and (iE.name ilike concat('%', ?1, '%') " +
             "or iE.description ilike concat('%', ?1, '%'))", nativeQuery = true)
-    Page<ItemEntity> findItemIsNotRentedByNameOrDescription(String text, Pageable page);
+    Page<ItemEntity> findItemIsAvailableByNameOrDescription(String text, Pageable page);
 
-    Page<ItemEntity> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailableIsTrue(String nameSearch,
-                                                                                                       String descSearch,
-                                                                                                       Pageable page);
+    Page<ItemEntity> findAllByOwnerId(long ownerId, Pageable page);
 
-    @Query(value =
-            "SELECT " +
-                "items_bookings.id, " +
-                "items_bookings.name, " +
-                "items_bookings.description, " +
-                "items_bookings.available, " +
-                "items_bookings.last_booking_entity AS lastBookingEntityId, " +
-                "items_bookings.next_booking_entity AS nextBookingEntityId, " +
-                "b1.booker_id AS lastBookingEntityBookerId, " +
-                "b1.start_date AS lastBookingEntityStart, " +
-                "b1.end_date AS lastBookingEntityEnd, " +
-                "b2.booker_id AS nextBookingEntityBookerId, " +
-                "b2.start_date AS nextBookingEntityStart, " +
-                "b2.end_date AS nextBookingEntityEnd " +
-            "FROM " +
-                "( " +
-                    "SELECT items.id, items.name, items.description, items.available, " +
-                        "( " +
-                            "SELECT MAX(b3.id) " +
-                                "FROM bookings as b3 " +
-                                "WHERE start_date in " +
-                                                    "( " +
-                                                    "SELECT MAX(start_date) " +
-                                                        "FROM bookings " +
-                                                        "WHERE status like 'APPROVED' AND start_date <= :now" +
-                                                    ") " +
-                                "AND b3.item_id = items.id" +
-                        ") AS last_booking_entity, " +
-                        "( " +
-                            "SELECT MIN(b4.id) " +
-                                "FROM bookings as b4 " +
-                                "WHERE start_date in " +
-                                                    "( " +
-                                                    "SELECT MIN(start_date) " +
-                                                        "FROM bookings " +
-                                                        "WHERE status like 'APPROVED' AND start_date >= :now" +
-                                                    ") " +
-                                "AND b4.item_id = items.id" +
-                        ") AS next_booking_entity " +
-                    "FROM items " +
-                    "WHERE owner_id = :ownerId" +
-                ") AS items_bookings " +
-            "LEFT JOIN bookings AS b1 ON b1.id = items_bookings.last_booking_entity " +
-            "LEFT JOIN bookings AS b2 ON b2.id = items_bookings.next_booking_entity ", nativeQuery = true)
-    Page<ItemWithBookingProjection> findByOwnerIdWithLastAndNextBooking(long ownerId, LocalDateTime now, Pageable page);
-
-    List<ItemEntity> findAllByOwnerIdOrderById(long ownerId);
+    List<ItemShortResponseDtoProjection> findAllByRequestIdIn(List<Long> requestsIds);
 
 }

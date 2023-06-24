@@ -33,7 +33,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public UserResponseDto updateUser(@PathVariable long userId,
                                       @RequestBody UserResponseDto userResponseDto) {
-            return userService.updateUser(userId, userResponseDto);
+        return userService.updateUser(userId, userResponseDto);
     }
 
     @DeleteMapping("/{userId}")
@@ -44,9 +44,9 @@ public class UserController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<UserResponseDto> findAllUser(@RequestParam(value = "from", defaultValue = "0") int from,
-                                             @RequestParam(value = "size", defaultValue = "10") int size) {
-        return userService.findAllUserResponseDto(from, size);
+    public List<UserResponseDto> findAllUsers(@RequestParam(value = "from", required = false, defaultValue = "0") int from,
+                                              @RequestParam(value = "size", required = false, defaultValue = "10") int size) {
+        return userService.findAllUsers(from, size);
     }
 
 }

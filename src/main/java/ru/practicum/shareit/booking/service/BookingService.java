@@ -12,11 +12,11 @@ import ru.practicum.shareit.expception.exp.BadRequestException;
 import ru.practicum.shareit.expception.exp.NotFoundException;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Validated
@@ -26,8 +26,8 @@ public interface BookingService {
     @Validated
     @Transactional
     @Modifying
-    BookingResponseDto createBooking(@Valid BookingRequestDto bookingRequestDto,
-                                     @Positive long bookerId) throws NotFoundException, BadRequestException;
+    BookingResponseDto createBooking(@Positive long bookerId,
+                                     @Valid BookingRequestDto bookingRequestDto) throws NotFoundException, BadRequestException;
 
     @Transactional
     @Modifying
@@ -39,18 +39,13 @@ public interface BookingService {
                                        @Positive long bookingId) throws NotFoundException;
 
     List<BookingResponseDto> findBookings(@Positive long userId,
-                                          String state,
+                                          @NotNull String state,
                                           @PositiveOrZero int from,
                                           @Positive int size,
-                                          boolean bookerIdOrOwnerId) throws NotFoundException;
+                                          boolean bookerIdOrOwnerId) throws NotFoundException, BadRequestException;
 
-    Optional<BookingEntity> findBookingWithUserBookedItemStatusApproved(@Positive long itemId,
-                                                                        @Positive long bookerId);
-
-    boolean checkBookingWithUserBookedItemStatusApproved(@Positive long itemId,
-                                                         @Positive long bookerId);
-
-    List<BookingShortResponseDto> findLastAndNextBookingEntity(@Positive long itemId, LocalDateTime now);
+    boolean checkExistsByItemIdAndBookerIdAndEndIsBeforeNowAndStatusApproved(@Positive long itemId,
+                                                                             @Positive long bookerId);
 
     BookingShortResponseDto findLastBooking(@Positive long itemId, LocalDateTime now);
 

@@ -37,9 +37,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto createUser(@Valid UserResponseDto userResponseDto) {
         final UserResponseDto savedUser = UserMapper.toUserResponseDto(
                 userRepository.save(
-                        UserMapper.toUserEntity(userResponseDto)
-                )
-        );
+                        UserMapper.toUserEntity(userResponseDto)));
         log.info("Пользователь c id => {} сохранен", savedUser.getId());
         return savedUser;
     }
@@ -49,7 +47,8 @@ public class UserServiceImpl implements UserService {
         final UserResponseDto foundUser = UserMapper.toUserResponseDto(
                 userRepository.findById(userId)
                         .orElseThrow(
-                                () -> new NotFoundException("Пользователь по id => " + userId + " не существует")));
+                                () -> new NotFoundException("Пользователь по id => " + userId
+                                        + " не существует")));
         log.info("Пользователь по id => {} получен", userId);
         return foundUser;
     }
@@ -61,14 +60,17 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto updateUser(@Positive long userId,
                                       @Valid UserResponseDto userResponseDto) throws NotFoundException {
         UserEntity userEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь по id => " + userId + " не существует"));
-        if (userResponseDto.getEmail() != null) {
-            userEntity.setEmail(userResponseDto.getEmail());
-        }
-        if (userResponseDto.getName() != null) {
-            userEntity.setName(userResponseDto.getName());
-        }
-        UserResponseDto updatedUser = UserMapper.toUserResponseDto(userEntity);
+                .orElseThrow(() -> new NotFoundException("Пользователь по id => " + userId
+                        + " не существует"));
+
+        userEntity = userEntity
+                .toBuilder()
+                .email(userResponseDto.getEmail() != null ? userResponseDto.getEmail() : userEntity.getEmail())
+                .name(userResponseDto.getName() != null ? userResponseDto.getName() : userEntity.getName())
+                .build();
+
+        final UserResponseDto updatedUser = UserMapper.toUserResponseDto(userRepository.save(userEntity));
+
         log.info("Пользователь по id => {} обновлен", userId);
         return updatedUser;
     }
@@ -86,37 +88,35 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponseDto> findAllUserResponseDto(@PositiveOrZero int from,
-                                                        @Positive int size) {
-        final Page<UserResponseDto> page = userRepository
-                .findAll(Util.getPageSortById(from, size))
+    public List<UserResponseDto> findAllUsers(@PositiveOrZero int from,
+                                              @Positive int size) {
+        final Page<UserResponseDto> userResponseDtoPage = userRepository
+                .findAll(Util.getPageSortAscByProperties(from, size, "id"))
                 .map(UserMapper::toUserResponseDto);
-        log.info("Пользователи получены size => {}", page.getTotalElements());
-        return page.getContent();
+        log.info("Пользователи получены size => {}", userResponseDtoPage.getTotalElements());
+        return userResponseDtoPage.getContent();
     }
 
     @Override
-    public UserNameProjection findNameByUserId(long userId) {
+    public UserNameProjection findNameByUserId(long userId) throws NotFoundException {
         log.info("Получено имя пользователя по id => {} для СЕРВИСОВ", userId);
         return userRepository.findNameById(userId)
                 .orElseThrow(
                         () -> new NotFoundException("Пользователь по id => "
-                                + userId + " не существует поиск СЕРВИСОВ")
-                );
+                                + userId + " не существует поиск СЕРВИСОВ"));
     }
 
     @Override
-    public UserEntity findUserEntityById(@Positive long userId) {
+    public UserEntity findUserEntityById(@Positive long userId) throws NotFoundException {
         log.info("Пользователь по id => {} получен для СЕРВИСОВ", userId);
         return userRepository.findById(userId)
                 .orElseThrow(
                         () -> new NotFoundException("Пользователь по id => "
-                                + userId + " не существует поиск СЕРВИСОВ")
-                );
+                                + userId + " не существует поиск СЕРВИСОВ"));
     }
 
     @Override
-    public void checkUserIsExistById(@Positive long userId) {
+    public void checkUserIsExistById(@Positive long userId) throws NotFoundException {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("Пользователь по id => " + userId + " не существует");
         }

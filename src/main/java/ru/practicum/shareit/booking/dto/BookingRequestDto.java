@@ -1,36 +1,34 @@
 package ru.practicum.shareit.booking.dto;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
-import ru.practicum.shareit.booking.enums.Status;
+import ru.practicum.shareit.booking.status.Status;
 import ru.practicum.shareit.validation.annotation.ValidStartEndFields;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
-@Data
-@NoArgsConstructor
+@Value
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 @Builder
 @ValidStartEndFields
+@Generated
 public class BookingRequestDto {
 
-    private Long id;
+    Long id;
 
     @NotNull
-    private Long itemId;
-
-    @NotNull
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime start;
+    Long itemId;
 
     @NotNull
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime end;
+    LocalDateTime start;
 
-    private Status status;
+    @NotNull
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    LocalDateTime end;
+
+    Status status;
 }
