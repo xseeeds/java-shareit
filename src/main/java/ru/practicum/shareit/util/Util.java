@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+
 @UtilityClass
 public class Util {
 
@@ -14,4 +15,7 @@ public class Util {
     public PageRequest getPageSortDescByProperties(int from, int size, String properties) {
         return PageRequest.of(from > 0 ? from / size : 0, size, Sort.by(Sort.Direction.DESC, properties));
     }
+
+    public static final String DATE_TIME_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
+
 }

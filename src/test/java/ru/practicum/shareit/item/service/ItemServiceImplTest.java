@@ -13,7 +13,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import ru.practicum.shareit.booking.dto.BookingShortResponseDto;
 import ru.practicum.shareit.booking.model.BookingEntity;
 import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.booking.status.Status;
+import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.expception.exp.BadRequestException;
 import ru.practicum.shareit.expception.exp.NotFoundException;
 import ru.practicum.shareit.item.dto.*;

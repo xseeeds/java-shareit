@@ -7,7 +7,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.BookingEntity;
-import ru.practicum.shareit.booking.status.Status;
+import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.item.model.ItemEntity;
 import ru.practicum.shareit.user.model.UserEntity;
 

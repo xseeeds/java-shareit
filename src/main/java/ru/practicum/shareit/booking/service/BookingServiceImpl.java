@@ -12,7 +12,8 @@ import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.dto.BookingShortResponseDto;
-import ru.practicum.shareit.booking.status.Status;
+import ru.practicum.shareit.booking.enums.State;
+import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.BookingEntity;
 import ru.practicum.shareit.booking.model.QBookingEntity;
@@ -65,7 +66,9 @@ public class BookingServiceImpl implements BookingService {
         if (itemEntity.getOwnerId() == bookerId) {
             throw new NotFoundException("Пользователь id => " + bookerId + " не может забронировать свою вещь id => " + itemEntity.getId());
         }
+
         userService.checkUserIsExistById(bookerId);
+
         final BookingResponseDto savedBooking = BookingMapper
                 .toBookingResponseDto(bookingRepository.save(
                         BookingMapper
@@ -120,6 +123,13 @@ public class BookingServiceImpl implements BookingService {
                                                  @PositiveOrZero int from,
                                                  @Positive int size,
                                                  boolean bookerIdOrOwnerId) throws NotFoundException, BadRequestException {
+        final State s;
+        try {
+            s = State.valueOf(state);
+        } catch (IllegalArgumentException e) {
+            throw new UnknownBookingStateException("Unknown state: " + state);
+        }
+
         userService.checkUserIsExistById(userId);
 
         final LocalDateTime now = LocalDateTime.now();
@@ -131,27 +141,25 @@ public class BookingServiceImpl implements BookingService {
             predicateList.add(QBookingEntity.bookingEntity.item.owner.id.eq(userId));
         }
 
-        switch (state) {
-            case "ALL":
+        switch (s) {
+            case ALL:
                 break;
-            case "CURRENT":
+            case CURRENT:
                 predicateList.add(QBookingEntity.bookingEntity.start.before(now)
                         .and(QBookingEntity.bookingEntity.end.after(now)));
                 break;
-            case "PAST":
+            case PAST:
                 predicateList.add(QBookingEntity.bookingEntity.end.before(now));
                 break;
-            case "FUTURE":
+            case FUTURE:
                 predicateList.add(QBookingEntity.bookingEntity.start.after(now));
                 break;
-            case "WAITING":
+            case WAITING:
                 predicateList.add(QBookingEntity.bookingEntity.status.eq(Status.WAITING));
                 break;
-            case "REJECTED":
+            case REJECTED:
                 predicateList.add(QBookingEntity.bookingEntity.status.eq(Status.REJECTED));
                 break;
-            default:
-                throw new UnknownBookingStateException("Unknown state: " + state);
         }
 
         final Predicate totalPredicate = ExpressionUtils.allOf(predicateList);

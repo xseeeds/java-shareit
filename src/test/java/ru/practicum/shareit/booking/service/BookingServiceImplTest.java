@@ -16,7 +16,7 @@ import ru.practicum.shareit.booking.dto.BookingShortResponseDto;
 import ru.practicum.shareit.booking.model.BookingEntity;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.repository.BookingShortDtoProjection;
-import ru.practicum.shareit.booking.status.Status;
+import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.expception.exp.BadRequestException;
 import ru.practicum.shareit.expception.exp.NotFoundException;
 import ru.practicum.shareit.item.model.ItemEntity;

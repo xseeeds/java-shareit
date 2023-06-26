@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.booking.status.Status;
+import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.expception.exp.BadRequestException;
 import ru.practicum.shareit.header.HttpHeadersShareIt;
 import ru.practicum.shareit.item.dto.ItemShortResponseDto;

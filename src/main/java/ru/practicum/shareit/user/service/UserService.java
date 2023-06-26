@@ -40,7 +40,7 @@ public interface UserService {
     List<UserResponseDto> findAllUsers(@PositiveOrZero int from,
                                        @Positive int size);
 
-    UserNameProjection findNameByUserId(long userId) throws NotFoundException;
+    UserNameProjection findNameByUserId(@Positive long userId) throws NotFoundException;
 
     UserEntity findUserEntityById(@Positive long userId) throws NotFoundException;
 

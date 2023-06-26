@@ -3,10 +3,6 @@ package ru.practicum.shareit.request.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.expception.exp.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemShortResponseDto;
 import ru.practicum.shareit.item.service.ItemService;
@@ -18,9 +14,6 @@ import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.util.Util;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +21,7 @@ import java.util.Map;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
-@Service
-@Validated
-@Transactional(readOnly = true)
+
 @RequiredArgsConstructor
 @Slf4j
 public class ItemRequestServiceImpl implements ItemRequestService {
@@ -38,13 +29,12 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final UserService userService;
     private final ItemService itemService;
 
-    @Modifying
-    @Transactional
-    @Validated
     @Override
-    public ItemRequestResponseDto createItemRequest(@Positive long requesterId,
-                                                    @Valid ItemRequestDto itemRequestDto) throws NotFoundException {
+    public ItemRequestResponseDto createItemRequest(long requesterId,
+                                                    ItemRequestDto itemRequestDto) throws NotFoundException {
+
         userService.checkUserIsExistById(requesterId);
+
         final ItemRequestResponseDto itemRequestResponseDto = ItemRequestMapper
                 .toItemRequestResponseDto(
                         requestRepository.save(
@@ -54,8 +44,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public ItemRequestResponseDto findItemRequestById(@Positive long itemRequestId,
-                                                      @Positive long userId) throws NotFoundException {
+    public ItemRequestResponseDto findItemRequestById(long itemRequestId,
+                                                      long userId) throws NotFoundException {
+
         userService.checkUserIsExistById(userId);
 
         final ItemRequestEntity itemRequestEntity = requestRepository
@@ -73,10 +64,12 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestResponseDto> findOwnerItemRequest(@Positive long requesterId,
-                                                             @PositiveOrZero int from,
-                                                             @Positive int size) throws NotFoundException {
+    public List<ItemRequestResponseDto> findOwnerItemRequest(long requesterId,
+                                                             int from,
+                                                             int size) throws NotFoundException {
+
         userService.checkUserIsExistById(requesterId);
+
         final Page<ItemRequestEntity> itemRequestsEntityPage = requestRepository
                 .findAllByRequesterIdOrderByCreatedDesc(requesterId, Util.getPageSortAscByProperties(from, size, "id"));
         final List<ItemRequestResponseDto> itemRequestResponseDtoList = this
@@ -87,10 +80,12 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestResponseDto> findOthersItemRequest(@Positive long userId,
-                                                              @PositiveOrZero int from,
-                                                              @Positive int size) throws NotFoundException {
+    public List<ItemRequestResponseDto> findOthersItemRequest(long userId,
+                                                              int from,
+                                                              int size) throws NotFoundException {
+
         userService.checkUserIsExistById(userId);
+
         final Page<ItemRequestEntity> itemRequestsEntityPage = requestRepository
                 .findAllByRequesterIdIsNotOrderByCreatedDesc(userId, Util.getPageSortAscByProperties(from, size, "id"));
         final List<ItemRequestResponseDto> itemRequestResponseDtoList = this

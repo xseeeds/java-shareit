@@ -60,8 +60,7 @@ public interface ItemService {
                                      @Positive long itemId,
                                      @Valid CommentRequestDto commentRequestDto) throws BadRequestException, NotFoundException;
 
-
-    List<ItemShortResponseDto> findItemShortResponseDtoByRequestIdIn(List<Long> requestIds);
+    List<ItemShortResponseDto> findItemShortResponseDtoByRequestIdIn(@NotNull List<Long> requestIds);
 
     ItemEntity findItemEntityById(@Positive long itemId) throws NotFoundException;
 

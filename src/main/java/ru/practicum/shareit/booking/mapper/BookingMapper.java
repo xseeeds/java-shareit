@@ -4,7 +4,7 @@ import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.dto.BookingShortResponseDto;
-import ru.practicum.shareit.booking.status.Status;
+import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.BookingEntity;
 import ru.practicum.shareit.booking.repository.BookingShortDtoProjection;
 import ru.practicum.shareit.item.dto.ItemShortResponseDto;
