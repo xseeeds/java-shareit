@@ -11,7 +11,6 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
-
 public interface ItemService {
 
     ItemResponseDto createItem(@Positive long ownerId,
@@ -21,7 +20,6 @@ public interface ItemService {
                                                                                         @Positive long itemId,
                                                                                         @PositiveOrZero int from,
                                                                                         @Positive int size) throws NotFoundException;
-
 
     ItemResponseDto updateItem(@Positive long ownerId,
                                @Positive long itemId,

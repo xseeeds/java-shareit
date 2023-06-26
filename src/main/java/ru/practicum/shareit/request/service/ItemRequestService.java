@@ -4,7 +4,6 @@ import ru.practicum.shareit.expception.exp.NotFoundException;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestResponseDto;
 
-
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
@@ -16,7 +15,7 @@ public interface ItemRequestService {
                                              @Valid ItemRequestDto itemRequestDto) throws NotFoundException;
 
     ItemRequestResponseDto findItemRequestById(@Positive long itemRequestId,
-                                               @Valid long userId) throws NotFoundException;
+                                               @Positive long userId) throws NotFoundException;
 
     List<ItemRequestResponseDto> findOwnerItemRequest(@Positive long requesterId,
                                                       @PositiveOrZero int from,
