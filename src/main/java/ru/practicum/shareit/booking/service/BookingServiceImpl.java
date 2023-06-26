@@ -58,7 +58,8 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     @Modifying
     @Override
-    public BookingResponseDto createBooking(@Positive long bookerId, @Valid BookingRequestDto bookingRequestDto) throws NotFoundException, BadRequestException {
+    public BookingResponseDto createBooking(@Positive long bookerId,
+                                            @Valid BookingRequestDto bookingRequestDto) throws NotFoundException, BadRequestException {
         final ItemEntity itemEntity = itemService.findItemEntityById(bookingRequestDto.getItemId());
         if (!itemEntity.getAvailable()) {
             throw new BadRequestException("Вещь id => " + itemEntity.getId() + " не доступна для бронирования");
@@ -184,7 +185,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingShortResponseDto findLastBooking(@Positive long itemId, LocalDateTime now) {
+    public BookingShortResponseDto findLastBooking(@Positive long itemId, @NotNull LocalDateTime now) {
         final BookingShortDtoProjection bookingShortDtoProjection = bookingRepository
                 .findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(itemId, now, Status.APPROVED);
         if (bookingShortDtoProjection == null) {
@@ -198,7 +199,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingShortResponseDto findNextBooking(@Positive long itemId, LocalDateTime now) {
+    public BookingShortResponseDto findNextBooking(@Positive long itemId, @NotNull LocalDateTime now) {
         final BookingShortDtoProjection bookingShortDtoProjection = bookingRepository
                 .findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(itemId, now, Status.APPROVED);
         if (bookingShortDtoProjection == null) {

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.booking.dto.BookingShortResponseDto;
@@ -26,11 +27,18 @@ import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.validation.Marker;
 import ru.practicum.shareit.util.Util;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 import java.util.*;
 
 import static java.util.stream.Collectors.*;
 
+@Service
+@Validated
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Slf4j
 public class ItemServiceImpl implements ItemService {
@@ -39,9 +47,13 @@ public class ItemServiceImpl implements ItemService {
     private final UserService userService;
     private final BookingService bookingService;
 
+
+    @Transactional
+    @Modifying
+    @Validated(Marker.OnCreate.class)
     @Override
-    public ItemResponseDto createItem(long ownerId,
-                                      ItemResponseDto itemResponseDto) throws NotFoundException {
+    public ItemResponseDto createItem(@Positive long ownerId,
+                                      @Valid ItemResponseDto itemResponseDto) throws NotFoundException {
 
         userService.checkUserIsExistById(ownerId);
 
@@ -54,10 +66,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemWithBookingAndCommentsResponseDto findItemWithBookingAndCommentsResponseDtoById(long userId,
-                                                                                               long itemId,
-                                                                                               int from,
-                                                                                               int size) throws NotFoundException {
+    public ItemWithBookingAndCommentsResponseDto findItemWithBookingAndCommentsResponseDtoById(@Positive long userId,
+                                                                                               @Positive long itemId,
+                                                                                               @PositiveOrZero int from,
+                                                                                               @Positive int size) throws NotFoundException {
         final ItemEntity itemEntity = this.findItemEntityById(itemId);
 
         final List<CommentResponseDto> commentResponseDtoList = commentRepository
@@ -88,9 +100,9 @@ public class ItemServiceImpl implements ItemService {
     @Validated(Marker.OnUpdate.class)
     @Modifying
     @Override
-    public ItemResponseDto updateItem(long ownerId,
-                                      long itemId,
-                                      ItemResponseDto itemResponseDto) throws NotFoundException {
+    public ItemResponseDto updateItem(@Positive long ownerId,
+                                      @Positive long itemId,
+                                      @Valid ItemResponseDto itemResponseDto) throws NotFoundException {
         ItemEntity itemEntity = itemRepository
                 .findByIdAndOwnerId(itemId, ownerId)
                 .orElseThrow(
@@ -115,8 +127,8 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Modifying
     @Override
-    public void deleteItemById(long ownerId,
-                               long itemId) throws NotFoundException {
+    public void deleteItemById(@Positive long ownerId,
+                               @Positive long itemId) throws NotFoundException {
         if (!itemRepository.existsByIdAndOwnerId(itemId, ownerId)) {
             throw new NotFoundException("Вещь по id => " + itemId
                     + " не принадлежит пользователю с id => " + ownerId);
@@ -126,9 +138,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemWithBookingAndCommentsResponseDto> findItemWithBookingAndCommentsResponseDtoByOwnerId(long ownerId,
-                                                                                                          int from,
-                                                                                                          int size) throws NotFoundException {
+    public List<ItemWithBookingAndCommentsResponseDto> findItemWithBookingAndCommentsResponseDtoByOwnerId(@Positive long ownerId,
+                                                                                                          @PositiveOrZero int from,
+                                                                                                          @Positive int size) throws NotFoundException {
 
         //TODO подумай насчёт Pageable page comment
 
@@ -205,9 +217,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemResponseDto> findItemIsAvailableByNameOrDescription(String text,
-                                                                        int from,
-                                                                        int size) {
+    public List<ItemResponseDto> findItemIsAvailableByNameOrDescription(@NotNull String text,
+                                                                        @PositiveOrZero int from,
+                                                                        @Positive int size) {
         if (text.isBlank()) {
             log.info("Получен пустой запрос поиска вещи");
             return Collections.emptyList();
@@ -219,10 +231,13 @@ public class ItemServiceImpl implements ItemService {
         return itemResponseDtoPage.getContent();
     }
 
+    @Transactional
+    @Modifying
+    @Validated
     @Override
-    public CommentResponseDto createComment(long bookerId,
-                                            long itemId,
-                                            CommentRequestDto commentRequestDto) throws BadRequestException, NotFoundException {
+    public CommentResponseDto createComment(@Positive long bookerId,
+                                            @Positive long itemId,
+                                            @Valid CommentRequestDto commentRequestDto) throws BadRequestException, NotFoundException {
         if (!bookingService.checkExistsByItemIdAndBookerIdAndEndIsBeforeNowAndStatusApproved(itemId, bookerId)) {
             throw new BadRequestException("Данный пользователь с id => " + bookerId
                     + " вещь по id => " + itemId + " не бронировал!");
@@ -240,7 +255,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemShortResponseDto> findItemShortResponseDtoByRequestIdIn(List<Long> requestIds) {
+    public List<ItemShortResponseDto> findItemShortResponseDtoByRequestIdIn(@NotNull List<Long> requestIds) {
         final List<ItemShortResponseDto> itemShortResponseDtoList = itemRepository
                 .findAllByRequestIdIn(requestIds)
                 .stream()
@@ -251,7 +266,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemEntity findItemEntityById(long itemId) throws NotFoundException {
+    public ItemEntity findItemEntityById(@Positive long itemId) throws NotFoundException {
         log.info("Вещь по id => {} получена для СЕРВИСОВ", itemId);
         return itemRepository.findById(itemId)
                 .orElseThrow(
@@ -260,7 +275,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public void checkItemIsExistById(long itemId) throws NotFoundException {
+    public void checkItemIsExistById(@Positive long itemId) throws NotFoundException {
         if (!itemRepository.existsById(itemId)) {
             throw new NotFoundException("Вещь по id => " + itemId + " не существует");
         }
