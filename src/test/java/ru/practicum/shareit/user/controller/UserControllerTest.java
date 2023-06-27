@@ -31,7 +31,7 @@ class UserControllerTest {
 	private final MockMvc mockMvc;
 
 	@MockBean
-	UserService userService;
+	private UserService userService;
 
 	@Test
 	@SneakyThrows
