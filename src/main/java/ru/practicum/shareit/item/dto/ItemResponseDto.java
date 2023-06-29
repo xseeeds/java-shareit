@@ -1,17 +1,21 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.Builder;
-import lombok.Value;
+import lombok.*;
 import ru.practicum.shareit.validation.Marker;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import javax.validation.constraints.Positive;
 
 @Value
+@NoArgsConstructor(force = true)
+@AllArgsConstructor
 @Builder(toBuilder = true)
+@Generated
 public class ItemResponseDto {
 
+    @Null(groups = Marker.OnCreate.class)
     @Positive(groups = Marker.OnUpdate.class)
     Long id;
 
@@ -26,4 +30,5 @@ public class ItemResponseDto {
     @NotNull(groups = Marker.OnCreate.class)
     Boolean available;
 
+    Long requestId;
 }

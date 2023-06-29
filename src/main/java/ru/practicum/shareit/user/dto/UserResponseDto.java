@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user.dto;
 
 import lombok.Builder;
+import lombok.Generated;
 import lombok.Value;
 import ru.practicum.shareit.validation.Marker;
 
@@ -8,6 +9,7 @@ import javax.validation.constraints.*;
 
 @Value
 @Builder(toBuilder = true)
+@Generated
 public class UserResponseDto {
 
     @Positive(groups = Marker.OnUpdate.class)

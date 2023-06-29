@@ -5,20 +5,21 @@ import lombok.*;
 import javax.persistence.*;
 
 
-@Data
+@Value
 @Builder(toBuilder = true)
 @Entity
 @Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor(force = true)
+@Generated
 public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
-    private String name;
+    String name;
 
     @Column(unique = true)
-    private String email;
+    String email;
 }

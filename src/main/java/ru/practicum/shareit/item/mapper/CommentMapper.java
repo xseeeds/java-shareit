@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.mapper;
 
 import lombok.experimental.UtilityClass;
+import ru.practicum.shareit.item.dto.CommentRequestDto;
 import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.model.CommentEntity;
 
@@ -20,10 +21,10 @@ public class CommentMapper {
                 .build();
     }
 
-    public CommentEntity toCommentEntityAndCreatedNow(CommentResponseDto commentResponseDto, long itemId, long authorId) {
+    public CommentEntity toCommentEntityAndCreatedNow(CommentRequestDto commentRequestDto, long itemId, long authorId) {
         return CommentEntity
                 .builder()
-                .text(commentResponseDto.getText())
+                .text(commentRequestDto.getText())
                 .itemId(itemId)
                 .authorId(authorId)
                 .created(LocalDateTime.now())

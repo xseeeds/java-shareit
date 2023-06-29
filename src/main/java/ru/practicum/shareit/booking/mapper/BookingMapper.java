@@ -20,7 +20,10 @@ public class BookingMapper {
                 .item(ItemShortResponseDto
                         .builder()
                         .id(bookingEntity.getItemId())
-                        .name(bookingEntity.getItem().getName())
+                        .name(bookingEntity.getItem() != null ? bookingEntity.getItem().getName() : null)
+                        .description(bookingEntity.getItem() != null ? bookingEntity.getItem().getDescription() : null)
+                        .available(bookingEntity.getItem() != null ? bookingEntity.getItem().getAvailable() : null)
+                        .requestId(bookingEntity.getItem() != null ? bookingEntity.getItem().getRequestId() : null)
                         .build())
                 .start(bookingEntity.getStart())
                 .end(bookingEntity.getEnd())
