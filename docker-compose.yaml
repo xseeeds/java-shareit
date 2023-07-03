@@ -13,6 +13,7 @@ services:
 #      - TZ=Europe/Samara
 
   server:
+    restart: on-failure
     build: ./server
     image: server-image
     container_name: shareit-server
@@ -29,6 +30,7 @@ services:
 #      - TZ=Europe/Samara
 
   gateway:
+    restart: on-failure
     build: ./gateway
     image: gateway-image
     container_name: shareit-gateway

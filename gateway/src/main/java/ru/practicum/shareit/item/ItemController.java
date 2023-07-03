@@ -15,7 +15,6 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.Collections;
-import java.util.Optional;
 
 import static ru.practicum.shareit.header.HttpHeadersShareIt.X_SHARER_USER_ID;
 
@@ -80,7 +79,7 @@ public class ItemController {
 
         if (text.isBlank()) {
             log.info("GETAWAY => Получен пустой запрос поиска вещи");
-            return ResponseEntity.of(Optional.of(Collections.emptyList()));
+            return ResponseEntity.ok().body(Collections.emptyList());
         }
         log.info("GETAWAY => findItemIsAvailableByNameOrDescription text => {}", text);
         return itemClient.search(text, from, size);
