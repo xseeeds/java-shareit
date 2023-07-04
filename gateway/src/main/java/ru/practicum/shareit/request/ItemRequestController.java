@@ -27,7 +27,7 @@ public class ItemRequestController {
     public ResponseEntity<Object> createItemRequest(
             @Positive @RequestHeader(X_SHARER_USER_ID) long requesterId,
             @Valid @RequestBody ItemRequestRequestDto itemRequestRequestDto) {
-        log.info("GETAWAY => createItemRequest requesterId => {}", requesterId);
+        log.info("GATEWAY => createItemRequest requesterId => {}", requesterId);
         return itemRequestClient.postRequest(requesterId, itemRequestRequestDto);
     }
 
@@ -35,7 +35,7 @@ public class ItemRequestController {
     public ResponseEntity<Object> findItemRequestById(
             @Positive @RequestHeader(X_SHARER_USER_ID) long userId,
             @Positive @PathVariable long itemRequestId) {
-        log.info("GETAWAY => findItemRequestById userId => {}, itemRequestId => {}", userId, itemRequestId);
+        log.info("GATEWAY => findItemRequestById userId => {}, itemRequestId => {}", userId, itemRequestId);
         return itemRequestClient.getRequestById(itemRequestId, userId);
     }
 
@@ -44,7 +44,7 @@ public class ItemRequestController {
             @Positive @RequestHeader(X_SHARER_USER_ID) long requesterId,
             @PositiveOrZero @RequestParam(value = "from", defaultValue = "0") int from,
             @Positive @RequestParam(value = "size", defaultValue = "10") int size) {
-        log.info("GETAWAY => findOwnerItemRequest requesterId => {}", requesterId);
+        log.info("GATEWAY => findOwnerItemRequest requesterId => {}", requesterId);
         return itemRequestClient.getOwnRequests(requesterId, from, size);
     }
 
@@ -53,7 +53,7 @@ public class ItemRequestController {
             @Positive @RequestHeader(X_SHARER_USER_ID) long userId,
             @PositiveOrZero @RequestParam(value = "from", defaultValue = "0") int from,
             @Positive @RequestParam(value = "size", defaultValue = "10") int size) {
-        log.info("GETAWAY => findOthersItemRequest userId => {}", userId);
+        log.info("GATEWAY => findOthersItemRequest userId => {}", userId);
         return itemRequestClient.getOthersRequests(userId, from, size);
     }
 

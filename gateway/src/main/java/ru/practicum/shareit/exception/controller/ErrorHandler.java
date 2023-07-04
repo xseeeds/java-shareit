@@ -35,7 +35,7 @@ public class ErrorHandler {
     public ErrorResponse errorBadRequestException(
             final BadRequestException e
     ) {
-        log.warn("GETAWAY => " + e.getMessage(), e);
+        log.warn("GATEWAY => " + e.getMessage(), e);
         return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
                 "errorBadRequestException", e.getMessage());
     }
@@ -43,7 +43,7 @@ public class ErrorHandler {
     @ExceptionHandler(UnknownBookingStateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse errorUnknownBookingStateException(final UnknownBookingStateException e) {
-        log.warn("GETAWAY => " + e.getMessage(), e);
+        log.warn("GATEWAY => " + e.getMessage(), e);
         return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
                 e.getMessage(), "errorUnknownBookingStateException");
     }
@@ -53,7 +53,7 @@ public class ErrorHandler {
     public ErrorResponse errorMismatchedInputException(
             final MismatchedInputException e
     ) {
-        log.warn("GETAWAY => " + e.getMessage(), e);
+        log.warn("GATEWAY => " + e.getMessage(), e);
         final int endIndex = nthIndexOf(e.getMessage(), "\n", 1);
         return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
                 "errorMismatchedInputException", e.getMessage().substring(0, endIndex));
@@ -64,7 +64,7 @@ public class ErrorHandler {
     public ErrorResponse errorMissingServletRequestParameterException(
             final MissingServletRequestParameterException e
     ) {
-        log.warn("GETAWAY => " + e.getMessage(), e);
+        log.warn("GATEWAY => " + e.getMessage(), e);
         return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
                 "errorMissingServletRequestParameterException", e.getMessage());
     }
@@ -74,7 +74,7 @@ public class ErrorHandler {
     public ErrorResponse errorMissingRequestHeaderException(
             final MissingRequestHeaderException e
     ) {
-        log.warn("GETAWAY => " + e.getMessage(), e);
+        log.warn("GATEWAY => " + e.getMessage(), e);
         return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
                 "errorMissingRequestHeaderException", e.getMessage());
     }
@@ -84,7 +84,7 @@ public class ErrorHandler {
     public ValidationErrorResponse errorConstraintValidationException(
             final ConstraintViolationException e
     ) {
-        log.warn("GETAWAY => " + e.getMessage(), e);
+        log.warn("GATEWAY => " + e.getMessage(), e);
         final List<Violation> errorPathVariable = e.getConstraintViolations()
                 .stream()
                 .map(
@@ -102,7 +102,7 @@ public class ErrorHandler {
     public ValidationErrorResponse errorMethodArgumentNotValidException(
             final MethodArgumentNotValidException e
     ) {
-        log.warn("GETAWAY => " + e.getMessage(), e);
+        log.warn("GATEWAY => " + e.getMessage(), e);
         final List<Violation> errorRequestBody = e.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -121,7 +121,7 @@ public class ErrorHandler {
     public ErrorResponse errorNotFoundException(
             final NotFoundException e
     ) {
-        log.warn("GETAWAY => " + e.getMessage(), e);
+        log.warn("GATEWAY => " + e.getMessage(), e);
         return new ErrorResponse(HttpStatus.NOT_FOUND.toString(),
                 "errorNotFoundException", e.getMessage());
     }
@@ -131,7 +131,7 @@ public class ErrorHandler {
     public ErrorResponse errorConflictException(
             final ConflictException e
     ) {
-        log.warn("GETAWAY => " + e.getMessage(), e);
+        log.warn("GATEWAY => " + e.getMessage(), e);
         return new ErrorResponse(HttpStatus.CONFLICT.toString(),
                 "errorConflictException", e.getMessage());
     }
@@ -141,7 +141,7 @@ public class ErrorHandler {
     public ErrorResponse errorDataIntegrityViolationException(
             final DataIntegrityViolationException e
     ) {
-        log.warn("GETAWAY => " + e.getMessage(), e);
+        log.warn("GATEWAY => " + e.getMessage(), e);
         final int endIndex = nthIndexOf(e.getMostSpecificCause().getMessage(), ")", 2);
         return new ErrorResponse(HttpStatus.CONFLICT.toString(),
                 "errorDataIntegrityViolationException", e.getMostSpecificCause().getMessage().substring(0, endIndex + 1));
@@ -152,7 +152,7 @@ public class ErrorHandler {
     public ErrorResponse errorSQLIntegrityConstraintViolationException(
             final SQLIntegrityConstraintViolationException e
     ) {
-        log.warn("GETAWAY => " + e.getMessage(), e);
+        log.warn("GATEWAY => " + e.getMessage(), e);
         final int endIndex = nthIndexOf(e.getMessage(), ")", 2);
         return new ErrorResponse(HttpStatus.CONFLICT.toString(),
                 "errorSQLIntegrityConstraintViolationException", e.getMessage().substring(0, endIndex + 1));
@@ -163,7 +163,7 @@ public class ErrorHandler {
     public ErrorResponse errorSQLSyntaxErrorException(
             final SQLSyntaxErrorException e
     ) {
-        log.warn("GETAWAY => " + e.getMessage(), e);
+        log.warn("GATEWAY => " + e.getMessage(), e);
         final int endIndex = nthIndexOf(e.getMessage(), "\n", 1);
         return new ErrorResponse(HttpStatus.CONFLICT.toString(),
                 "errorSQLSyntaxErrorException", e.getMessage().substring(0, endIndex));
@@ -172,7 +172,7 @@ public class ErrorHandler {
     @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse errorInternalServerErrorException(final Throwable e) {
-    	log.warn("GETAWAY => " + e.getMessage(), e);
+    	log.warn("GATEWAY => " + e.getMessage(), e);
         return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.toString(),
                 "errorInternalServerErrorException", "Произошла непредвиденная ошибка => " + e.getMessage());
     }

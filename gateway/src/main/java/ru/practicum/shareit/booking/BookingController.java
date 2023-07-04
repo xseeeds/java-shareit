@@ -30,7 +30,7 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<Object> createBooking(@Positive @RequestHeader(X_SHARER_USER_ID) long bookerId,
                                                 @Valid @RequestBody BookingRequestDto bookingRequestDto) {
-        log.info("GETAWAY => createBooking bookerId => {}", bookerId);
+        log.info("GATEWAY => createBooking bookerId => {}", bookerId);
         return bookingClient.postBooking(bookerId, bookingRequestDto);
     }
 
@@ -38,14 +38,14 @@ public class BookingController {
     public ResponseEntity<Object> approveBookingById(@Positive @RequestHeader(X_SHARER_USER_ID) long ownerId,
                                                      @Positive @PathVariable long bookingId,
                                                      @RequestParam boolean approved) {
-        log.info("GETAWAY => approveBookingById ownerId => {}, bookingId => {}, approved => {}", ownerId, bookingId, approved);
+        log.info("GATEWAY => approveBookingById ownerId => {}, bookingId => {}, approved => {}", ownerId, bookingId, approved);
         return bookingClient.approveBooking(ownerId, bookingId, approved);
     }
 
     @GetMapping("/{bookingId}")
     public ResponseEntity<Object> findBookingById(@Positive @RequestHeader(X_SHARER_USER_ID) long ownerId,
                                                   @Positive @PathVariable long bookingId) {
-        log.info("GETAWAY => findBookingById ownerId => {}, bookingId => {}", ownerId, bookingId);
+        log.info("GATEWAY => findBookingById ownerId => {}, bookingId => {}", ownerId, bookingId);
         return bookingClient.getBookingById(ownerId, bookingId);
     }
 
@@ -55,7 +55,7 @@ public class BookingController {
                                                       @PositiveOrZero @RequestParam(value = "from", defaultValue = "0") int from,
                                                       @Positive @RequestParam(value = "size", defaultValue = "10") int size) throws UnknownBookingStateException {
         final State state = Converter.getState(s);
-        log.info("GETAWAY => findBookersBookings bookerId => {}, state => {}", bookerId, state);
+        log.info("GATEWAY => findBookersBookings bookerId => {}, state => {}", bookerId, state);
         return bookingClient.getBookersBookings(bookerId, state, from, size);
     }
 
@@ -65,7 +65,7 @@ public class BookingController {
                                                      @PositiveOrZero @RequestParam(value = "from", defaultValue = "0") int from,
                                                      @Positive @RequestParam(value = "size", defaultValue = "10") int size) throws UnknownBookingStateException {
         final State state = Converter.getState(s);
-        log.info("GETAWAY => findOwnersBookings ownerId => {}, state => {}", ownerId, state);
+        log.info("GATEWAY => findOwnersBookings ownerId => {}, state => {}", ownerId, state);
         return bookingClient.getOwnersBookings(ownerId, state, from, size);
     }
 

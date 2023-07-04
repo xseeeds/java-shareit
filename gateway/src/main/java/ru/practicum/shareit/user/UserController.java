@@ -25,13 +25,13 @@ public class UserController {
     @Validated(Marker.OnCreate.class)
     @PostMapping
     public ResponseEntity<Object> createUser(@Valid @RequestBody UserRequestDto userRequestDto) {
-        log.info("GETAWAY => createUser email => {}", userRequestDto.getEmail());
+        log.info("GATEWAY => createUser email => {}", userRequestDto.getEmail());
         return userClient.postUser(userRequestDto);
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<Object> findUserDtoById(@Positive @PathVariable long userId) {
-        log.info("GETAWAY => findUserDtoById userId => {}", userId);
+        log.info("GATEWAY => findUserDtoById userId => {}", userId);
         return userClient.getUserById(userId);
     }
 
@@ -39,20 +39,20 @@ public class UserController {
     @PatchMapping("/{userId}")
     public ResponseEntity<Object> updateUser(@Positive @PathVariable long userId,
                                              @Valid @RequestBody UserRequestDto userRequestDto) {
-        log.info("GETAWAY => updateUser userId => {}", userId);
+        log.info("GATEWAY => updateUser userId => {}", userId);
         return userClient.patchUser(userId, userRequestDto);
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<Object> deleteUserById(@Positive @PathVariable long userId) {
-        log.info("GETAWAY => deleteUserById userId => {}", userId);
+        log.info("GATEWAY => deleteUserById userId => {}", userId);
         return userClient.deleteUser(userId);
     }
 
     @GetMapping
     public ResponseEntity<Object> findAllUsers(@PositiveOrZero @RequestParam(value = "from", defaultValue = "0") int from,
                                                @Positive @RequestParam(value = "size", defaultValue = "10") int size) {
-        log.info("GETAWAY => findAllUsers");
+        log.info("GATEWAY => findAllUsers");
         return userClient.getUsers(from, size);
     }
 
