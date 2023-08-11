@@ -146,6 +146,8 @@ public class BookingServiceImpl implements BookingService {
             case REJECTED:
                 predicateList.add(QBookingEntity.bookingEntity.status.eq(Status.REJECTED));
                 break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + state);
         }
 
         final Predicate totalPredicate = ExpressionUtils.allOf(predicateList);
@@ -153,7 +155,7 @@ public class BookingServiceImpl implements BookingService {
 
         final Page<BookingResponseDto> bookingResponsesPage = bookingRepository
                 .findAll(totalPredicate,
-                        Util.getPageSortDescByPropertiesAnd(from, size, "start"))
+                        Util.getPageSortDescByProperties(from, size, "start"))
                 .map(BookingMapper::toBookingResponseDto);
         log.info("SERVICE => Бронирования {} с id => {} , кол-во => {} получены",
                 bookerIdOrOwnerId ? "Владелец" : "Пользователь", userId, bookingResponsesPage.getTotalElements());
@@ -177,7 +179,6 @@ public class BookingServiceImpl implements BookingService {
         if (bookingShortDtoProjection == null) {
             log.info("SERVICE => Предыдущего бронирования для вещи по id => {} для СЕРВИСОВ не найдено", itemId);
             return null;
-            //return BookingShortResponseDto.of();
         }
         final BookingShortResponseDto bookingShortDto =
                 BookingMapper.toBookingShortResponseDto(bookingShortDtoProjection);
@@ -193,7 +194,6 @@ public class BookingServiceImpl implements BookingService {
         if (bookingShortDtoProjection == null) {
             log.info("SERVICE => Следующего бронирования для вещи по id => {} для СЕРВИСОВ не найдено", itemId);
             return null;
-            //return BookingShortResponseDto.of();
         }
         final BookingShortResponseDto bookingShortDto =
                 BookingMapper.toBookingShortResponseDto(bookingShortDtoProjection);

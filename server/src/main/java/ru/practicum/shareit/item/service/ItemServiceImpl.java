@@ -65,7 +65,7 @@ public class ItemServiceImpl implements ItemService {
         final ItemEntity itemEntity = this.findItemEntityById(itemId);
 
         final List<CommentResponseDto> commentResponseDtoList = commentRepository
-                .findAllByItemIdOrderByCreatedDesc(itemId, Util.getPageSortDescByPropertiesAnd(from, size, "created"))
+                .findAllByItemIdOrderByCreatedDesc(itemId, Util.getPageSortDescByProperties(from, size, "created"))
                 .stream()
                 .map(commentEntity -> CommentMapper.toCommentResponseDto(
                         commentEntity, commentEntity.getAuthor().getName()))

@@ -11,7 +11,7 @@ public class Util {
         return PageRequest.of(from > 0 ? from / size : 0, size, Sort.by(Sort.Direction.ASC, properties));
     }
 
-    public PageRequest getPageSortDescByPropertiesAnd(int from, int size, String properties) {
+    public PageRequest getPageSortDescByProperties(int from, int size, String properties) {
         return PageRequest.of(from > 0 ? from / size : 0, size, Sort.by(Sort.Direction.DESC, properties));
     }
 
