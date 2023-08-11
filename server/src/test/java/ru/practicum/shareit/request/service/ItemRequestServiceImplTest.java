@@ -9,7 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.util.ReflectionTestUtils;
+//import org.springframework.test.util.ReflectionTestUtils;
 import ru.practicum.shareit.item.dto.ItemShortResponseDto;
 import ru.practicum.shareit.item.model.ItemEntity;
 import ru.practicum.shareit.item.service.ItemService;
@@ -41,8 +41,9 @@ class ItemRequestServiceImplTest {
 
     @Mock
     private ItemRequestRepository requestRepository;
-
+    @Mock
     private UserService userService;
+    @Mock
     private ItemService itemService;
 
     private ItemRequestEntity itemRequestEntity;
@@ -54,6 +55,7 @@ class ItemRequestServiceImplTest {
 
     @BeforeEach
     void setUp() {
+/*
         userService = mock(UserService.class);
         itemService = mock(ItemService.class);
 
@@ -61,7 +63,7 @@ class ItemRequestServiceImplTest {
                 .setField(requestService, "userService", userService);
         ReflectionTestUtils
                 .setField(requestService, "itemService", itemService);
-
+*/
         final UserEntity requesterEntity = UserEntity
                 .builder()
                 .id(1L)

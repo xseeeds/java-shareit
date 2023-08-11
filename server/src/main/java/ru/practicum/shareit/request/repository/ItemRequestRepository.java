@@ -9,7 +9,7 @@ import ru.practicum.shareit.request.model.ItemRequestEntity;
 
 public interface ItemRequestRepository extends JpaRepository<ItemRequestEntity, Long>, QuerydslPredicateExecutor<ItemRequestEntity> {
 
-    Page<ItemRequestEntity> findAllByRequesterIdOrderByCreatedDesc(long requesterId, Pageable pageable);
+    Page<ItemRequestEntity> findAllByRequesterIdOrderByCreatedDesc(long requesterId, Pageable page);
 
     Page<ItemRequestEntity> findAllByRequesterIdIsNotOrderByCreatedDesc(long requesterId, Pageable page);
 
